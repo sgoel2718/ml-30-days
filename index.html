@@ -1,0 +1,218 @@
+<title>ML Sticky Notes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a revision board of masonry sticky notes, filtered by day and note type */
+:root{
+  --board:#e9ecef; --board-ink:#1d232b; --muted:#5b6672; --line:#cfd5db; --chip:#ffffff; --chip-on:#1d232b; --chip-on-ink:#ffffff;
+  --n-concept:#cfe6ff; --n-pitfall:#ffd0d4; --n-code:#fff1a8; --n-rule:#d4f2cc;
+  --n-ink:#1f2328; --n-soft:#4a525c; --code-bg:rgba(0,0,0,.07); --shadow:0 1px 2px rgba(20,30,40,.12),0 6px 14px rgba(20,30,40,.10);
+  --f-note:"Kalam","Segoe Print","Comic Sans MS",cursive;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
+  --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
+  --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
+  --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
+  --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}
+
+body{background:var(--board);color:var(--board-ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
+h1{font-family:var(--f-note);font-weight:700;font-size:clamp(30px,5vw,42px);line-height:1.05;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0;max-width:60ch}
+.progress{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.progress b{color:var(--board-ink);font-weight:500}
+
+.controls{display:flex;flex-direction:column;gap:10px;padding-block:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:24px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);width:44px;flex:none}
+.chip{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--chip);color:var(--board-ink);padding:5px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
+.chip:focus-visible,.got:focus-visible,#q:focus-visible{outline:2px solid #2f81c7;outline-offset:2px}
+.dot{width:10px;height:10px;border-radius:2px;border:1px solid rgba(0,0,0,.15)}
+#q{font:14px var(--f-body);padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--board-ink);flex:1 1 220px;min-width:0;max-width:340px}
+.hide-done{font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+
+.board{columns:250px;column-gap:22px}
+.note{break-inside:avoid;margin:0 0 22px;padding:14px 16px 12px;color:var(--n-ink);box-shadow:var(--shadow);border-radius:2px 2px 14px 2px;position:relative;transform:rotate(var(--tilt,0deg));transition:transform .15s ease,opacity .15s ease}
+.note:hover{transform:rotate(0deg) translateY(-2px)}
+.note.concept{background:var(--n-concept)} .note.pitfall{background:var(--n-pitfall)} .note.code{background:var(--n-code)} .note.rule{background:var(--n-rule)}
+.note.done{opacity:.45}
+.tag{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--n-soft);display:flex;justify-content:space-between;gap:8px}
+.note h3{font-family:var(--f-note);font-weight:700;font-size:21px;line-height:1.15;margin:6px 0 6px;text-wrap:balance}
+.note p{margin:0 0 8px;font-size:14px}
+.note pre{margin:6px 0 8px;padding:8px 10px;background:var(--code-bg);border-radius:4px;overflow-x:auto;font:13px/1.45 var(--f-mono);white-space:pre}
+.note code{font-family:var(--f-mono);font-size:12.5px;background:var(--code-bg);padding:0 4px;border-radius:3px}
+.note pre code{background:none;padding:0}
+.note table{border-collapse:collapse;font-size:12.5px;width:100%;margin:4px 0 8px}
+.note td{padding:3px 4px;border-top:1px solid rgba(127,127,127,.25);vertical-align:top}
+.note td:first-child{white-space:nowrap;padding-right:8px}
+.got{font:500 12px var(--f-body);background:transparent;border:1px solid rgba(127,127,127,.45);color:var(--n-ink);border-radius:999px;padding:2px 10px;cursor:pointer}
+.note.done .got{background:var(--n-ink);color:var(--board);border-color:var(--n-ink)}
+.empty{color:var(--muted);padding:40px 0;text-align:center}
+@media (prefers-reduced-motion: reduce){.note{transform:none;transition:none}.note:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ML Sticky Notes</h1>
+      <p class="sub">The points worth remembering from each day of the 30-day plan. Tick a note when you can explain it without looking.</p>
+    </div>
+    <div class="progress" id="progress"></div>
+  </header>
+
+  <div class="controls">
+    <div class="row"><span class="row-label">Day</span><div class="row" id="dayChips"></div></div>
+    <div class="row"><span class="row-label">Type</span><div class="row" id="typeChips"></div></div>
+    <div class="row">
+      <span class="row-label">Find</span>
+      <input id="q" type="search" placeholder="Search notes, e.g. axis, leakage, kwargs" aria-label="Search notes">
+      <label class="hide-done"><input type="checkbox" id="hideDone"> Hide notes I've got</label>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+</div>
+
+<script>
+const TYPES = {
+  concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}
+};
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas"};
+
+const NOTES = [
+  // ---------- Day 1 ----------
+  {id:"d1-names", day:1, type:"concept", title:"Names point to objects",
+   body:`<p>A variable is a label on an object. The <b>object</b> carries the type, not the name. That's why <code>x = 5</code> then <code>x = "hi"</code> is legal.</p>`},
+  {id:"d1-alias", day:1, type:"pitfall", title:"b = a does not copy",
+   body:`<pre><code>b = a; b.append(4)   # a changes too!
+c = a.copy()         # independent copy</code></pre>`},
+  {id:"d1-default", day:1, type:"pitfall", title:"Never use a mutable default",
+   body:`<pre><code>def f(x, bucket=None):
+    if bucket is None:
+        bucket = []</code></pre><p>A default like <code>bucket=[]</code> is created once and shared by every call.</p>`},
+  {id:"d1-structs", day:1, type:"concept", title:"The 4 core structures",
+   body:`<table><tr><td><code>list</code></td><td>ordered, mutable</td></tr><tr><td><code>tuple</code></td><td>ordered, immutable</td></tr><tr><td><code>dict</code></td><td>key → value</td></tr><tr><td><code>set</code></td><td>unique values</td></tr></table>`},
+  {id:"d1-comp", day:1, type:"code", title:"Comprehension = LINQ",
+   body:`<pre><code>[x*x for x in nums if x > 2]
+{k: v for k, v in pairs}</code></pre><p>The trailing <code>if</code> is Where; the front expression is Select.</p>`},
+  {id:"d1-kwargs", day:1, type:"code", title:"*args and **kwargs",
+   body:`<p><code>*args</code> → tuple of extra positional args.<br><code>**kwargs</code> → dict of keyword args.</p><pre><code>model = RandomForest(**config)</code></pre>`},
+  {id:"d1-div", day:1, type:"pitfall", title:"/ vs //",
+   body:`<p><code>7 / 2 = 3.5</code> (always a float)<br><code>7 // 2 = 3</code> (floor division)<br>Unlike C#, where 7/2 with ints gives 3.</p>`},
+  {id:"d1-get", day:1, type:"code", title:"Safe dict lookup",
+   body:`<pre><code>d.get("email", "none")</code></pre><p>Returns a default instead of raising <code>KeyError</code>.</p>`},
+  {id:"d1-gen", day:1, type:"code", title:"Generator inside sum()",
+   body:`<pre><code>sum(s.average for s in students)</code></pre><p>No square brackets, so no temporary list is built.</p>`},
+  {id:"d1-self", day:1, type:"concept", title:"Methods are functions on the class",
+   body:`<p><code>s.method(x)</code> runs <code>Student.method(s, x)</code>. <code>self</code> is just the first argument. Monkey-patching works, but keep methods in the class for production code.</p>`},
+  {id:"d1-datadriven", day:1, type:"rule", title:"Data-driven code survives change",
+   body:`<p>Loop over columns instead of naming them. Pass dependencies in as parameters instead of reading globals, or derive them from the data.</p>`},
+  {id:"d1-round", day:1, type:"rule", title:"Round only for display",
+   body:`<p>Never round in the middle of a calculation. Small errors add up across millions of rows.</p>`},
+  {id:"d1-key", day:1, type:"rule", title:"Key by a unique ID",
+   body:`<p>Two students named Ravi would overwrite each other in <code>{name: ...}</code>. Use the roll number or another unique key.</p>`},
+  {id:"d1-impossible", day:1, type:"rule", title:"Impossible value → missing",
+   body:`<p><b>Impossible</b> (105 out of 100): treat as NaN, then impute.<br><b>Plausible but extreme</b>: capping (winsorizing) is fine.</p>`},
+
+  // ---------- Day 2 ----------
+  {id:"d2-numpy", day:2, type:"concept", title:"Why NumPy is fast",
+   body:`<p>One contiguous block of same-typed numbers, processed in compiled C. Vectorised code is typically 10–100× faster than a Python loop.</p>`},
+  {id:"d2-axis", day:2, type:"rule", title:"The axis you name disappears",
+   body:`<table><tr><td><code>axis=0</code></td><td>collapses rows → one value per column</td></tr><tr><td><code>axis=1</code></td><td>collapses columns → one value per row</td></tr></table><p>When in doubt, print <code>.shape</code>.</p>`},
+  {id:"d2-mask", day:2, type:"code", title:"Boolean masks",
+   body:`<pre><code>m[(m > 60) &amp; (m < 90)]</code></pre><p>Use <code>&amp;</code> and <code>|</code> with brackets, never <code>and</code>/<code>or</code>.</p>`},
+  {id:"d2-broadcast", day:2, type:"concept", title:"Broadcasting",
+   body:`<p>A (3, 4) matrix minus a (4,) row subtracts the row from every row.</p><pre><code>z = (X - X.mean(0)) / X.std(0)</code></pre>`},
+  {id:"d2-seed", day:2, type:"code", title:"Seed your randomness",
+   body:`<pre><code>rng = np.random.default_rng(42)</code></pre><p>Same seed, same numbers. Essential for reproducible experiments.</p>`},
+  {id:"d2-loc", day:2, type:"code", title:"loc vs iloc",
+   body:`<p><code>loc</code> → by <b>label</b> or condition<br><code>iloc</code> → by integer <b>position</b></p><pre><code>df.loc[df.math > 80, ["name"]]</code></pre>`},
+  {id:"d2-sql", day:2, type:"code", title:"SQL → Pandas",
+   body:`<table><tr><td>WHERE</td><td><code>df[df.x > 1]</code></td></tr><tr><td>GROUP BY</td><td><code>df.groupby("k")["v"].mean()</code></td></tr><tr><td>JOIN</td><td><code>df.merge(o, on="id", how="left")</code></td></tr><tr><td>ORDER BY</td><td><code>df.sort_values("v")</code></td></tr><tr><td>CASE</td><td><code>np.where(c, a, b)</code></td></tr></table>`},
+  {id:"d2-rate", day:2, type:"rule", title:"Mean of a 0/1 column is a rate",
+   body:`<pre><code>df.groupby("sex")["survived"].mean()</code></pre><p>Gives the survival rate per group. Use <code>.sum()</code> for counts.</p>`},
+  {id:"d2-eda", day:2, type:"concept", title:"The EDA order",
+   body:`<p>Inspect → missing values → target → univariate → bivariate → multivariate → statistical tests → features.</p>`},
+  {id:"d2-leak", day:2, type:"pitfall", title:"Target leakage",
+   body:`<p>Drop any column that reveals the answer. Titanic's <code>alive</code> is just <code>survived</code> in words. Leaving it in gives a 100% score and a useless model.</p>`},
+  {id:"d2-baseline", day:2, type:"rule", title:"Always know the baseline",
+   body:`<p>Predicting the majority class gives 62% on Titanic. A model is only useful if it clearly beats that.</p>`},
+  {id:"d2-missing", day:2, type:"rule", title:"Handling missing values",
+   body:`<p>Mostly missing (Titanic deck, 77%) → drop the column.<br>Important and partly missing → impute by <b>group</b> median.<br>Keep a <code>was_missing</code> flag.</p><pre><code>df.groupby(g)["age"].transform(
+    lambda s: s.fillna(s.median()))</code></pre>`},
+  {id:"d2-plots", day:2, type:"rule", title:"Pick the plot by the question",
+   body:`<table><tr><td>One number</td><td>histogram</td></tr><tr><td>Categories</td><td>bar</td></tr><tr><td>Two numbers</td><td>scatter</td></tr><tr><td>Over time</td><td>line</td></tr><tr><td>Spread by group</td><td>box plot</td></tr></table>`},
+  {id:"d2-corr", day:2, type:"pitfall", title:"Correlation has blind spots",
+   body:`<p>Pearson correlation only sees <b>linear</b> links between <b>numeric</b> columns. Titanic's strongest predictor, <code>sex</code>, isn't in the matrix at all.</p>`},
+  {id:"d2-skew", day:2, type:"rule", title:"Right-skewed → log transform",
+   body:`<pre><code>df["log_fare"] = np.log1p(df["fare"])</code></pre><p><code>log1p</code> handles zeros safely.</p>`},
+  {id:"d2-cut", day:2, type:"code", title:"Bin a number into bands",
+   body:`<pre><code>pd.cut(df.age, bins=[0,12,18,60,80],
+       labels=["child","teen","adult","60+"])</code></pre>`},
+];
+
+// ---------- state ----------
+const store = {
+  get(){ try { return JSON.parse(localStorage.getItem("ml-sticky-done") || "[]"); } catch(e){ return []; } },
+  set(arr){ try { localStorage.setItem("ml-sticky-done", JSON.stringify(arr)); } catch(e){} }
+};
+let done = new Set(store.get());
+let activeDay = "all", activeType = "all", query = "", hideDone = false;
+
+const tilts = [-1.4, .9, -.6, 1.3, -1, .5, 1.1, -.8];
+
+function chip(container, value, label, isActive, onClick, color){
+  const b = document.createElement("button");
+  b.className = "chip"; b.type = "button";
+  b.setAttribute("aria-pressed", isActive ? "true" : "false");
+  b.innerHTML = (color ? `<span class="dot" style="background:var(${color})"></span>` : "") + label;
+  b.addEventListener("click", () => onClick(value));
+  container.appendChild(b);
+}
+function renderChips(){
+  const dc = document.getElementById("dayChips"); dc.innerHTML = "";
+  chip(dc, "all", "All days", activeDay === "all", v => { activeDay = v; render(); });
+  Object.entries(DAYS).forEach(([d, l]) => chip(dc, d, l, activeDay === d, v => { activeDay = v; render(); }));
+  const tc = document.getElementById("typeChips"); tc.innerHTML = "";
+  chip(tc, "all", "All types", activeType === "all", v => { activeType = v; render(); });
+  Object.entries(TYPES).forEach(([t, o]) => chip(tc, t, o.label, activeType === t, v => { activeType = v; render(); }, `--n-${t}`));
+}
+function render(){
+  renderChips();
+  const board = document.getElementById("board"); board.innerHTML = "";
+  const q = query.trim().toLowerCase();
+  const list = NOTES.filter(n =>
+    (activeDay === "all" || String(n.day) === activeDay) &&
+    (activeType === "all" || n.type === activeType) &&
+    (!hideDone || !done.has(n.id)) &&
+    (!q || (n.title + " " + n.body).toLowerCase().includes(q)));
+  list.forEach((n, i) => {
+    const el = document.createElement("article");
+    el.className = `note ${n.type}` + (done.has(n.id) ? " done" : "");
+    el.style.setProperty("--tilt", tilts[i % tilts.length] + "deg");
+    el.innerHTML = `<div class="tag"><span>Day ${n.day} · ${TYPES[n.type].label}</span></div>
+      <h3>${n.title}</h3>${n.body}
+      <button class="got" type="button" aria-pressed="${done.has(n.id)}">${done.has(n.id) ? "Got it ✓" : "Got it"}</button>`;
+    el.querySelector(".got").addEventListener("click", () => {
+      done.has(n.id) ? done.delete(n.id) : done.add(n.id);
+      store.set([...done]); render();
+    });
+    board.appendChild(el);
+  });
+  if (!list.length) board.innerHTML = `<p class="empty">No notes match. Clear the search or pick another filter.</p>`;
+  const total = NOTES.length, got = NOTES.filter(n => done.has(n.id)).length;
+  document.getElementById("progress").innerHTML = `<b>${got}</b> / ${total} notes learned`;
+}
+document.getElementById("q").addEventListener("input", e => { query = e.target.value; render(); });
+document.getElementById("hideDone").addEventListener("change", e => { hideDone = e.target.checked; render(); });
+render();
+</script>
