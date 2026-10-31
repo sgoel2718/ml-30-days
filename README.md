@@ -12,6 +12,7 @@ My 30-day journey through machine learning and AI, from Python basics to transfo
 | 1 | Python proficiency: types, data structures, comprehensions, functions, classes | Student marks analyzer in core Python | [Notebook](notebooks/Day01_Python_Proficiency.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day01_Python_Proficiency.ipynb) |
 | 2 | NumPy, Pandas, Matplotlib, Seaborn, SciPy | Titanic exploratory data analysis | [Notebook](notebooks/Day02_NumPy_Pandas_EDA.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day02_NumPy_Pandas_EDA.ipynb) |
 | 3 | Probability: events, conditional probability, Bayes' theorem, PMF/PDF/CDF, distributions | Naive Bayes spam filter built by hand | [Notebook](notebooks/Day03_Probability.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day03_Probability.ipynb) |
+| 3b | Spam filter step by step: every line of Naive Bayes on 4 emails, with all values printed | Hand-checkable spam filter | [Notebook](notebooks/Day03b_Spam_Filter_Step_by_Step.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day03b_Spam_Filter_Step_by_Step.ipynb) |
 
 Upcoming: statistics (Day 4), linear algebra (Day 5), calculus (Day 6), then classical ML, deep learning, transformers, RAG and deployment. See the plan for the full schedule.
 
