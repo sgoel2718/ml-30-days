@@ -18,7 +18,7 @@
   --board:#e9ecef; --board-ink:#1d232b; --muted:#5b6672; --line:#cfd5db; --chip:#ffffff; --chip-on:#1d232b; --chip-on-ink:#ffffff;
   --card:#ffffff; --card-soft:#f4f6f8; --accent:#2f6fb0;
   --n-concept:#cfe6ff; --n-pitfall:#ffd0d4; --n-code:#fff1a8; --n-rule:#d4f2cc;
-  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --dP:#c2456b;
+  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --dP:#c2456b;
   --lv-basic:#d4f2cc; --lv-mid:#fff1a8; --lv-adv:#ffd0d4;
   --n-ink:#1f2328; --n-soft:#4a525c; --code-bg:rgba(0,0,0,.07); --shadow:0 1px 2px rgba(20,30,40,.12),0 6px 14px rgba(20,30,40,.10);
   --f-note:"Kalam","Segoe Print","Comic Sans MS",cursive;
@@ -29,14 +29,14 @@
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}
 
@@ -176,8 +176,8 @@ details.card .body{padding:0 18px 14px 34px;max-width:82ch}
 
 <script>
 const R = String.raw;
-const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", P:"Project · TextPulse"};
-const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", P:"TextPulse: real-time spam & sentiment"};
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", P:"Project · TextPulse"};
+const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", P:"TextPulse: real-time spam & sentiment"};
 const TYPES = {concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}};
 const LEVELS = {basic:"Basic", mid:"Intermediate", adv:"Advanced"};
 const SUBS = {
@@ -1470,6 +1470,250 @@ insertAfter(FORMULAS, EXTRA_FORMULAS);
 insertAfter(LESSONS, EXTRA_LESSONS);
 insertAfter(INTERVIEW, EXTRA_INTERVIEW);
 (() => { const n = {}; LESSONS.forEach(l => { n[l.day] = (n[l.day] || 0) + 1; l.title = l.title.replace(/^\d+\.\s*/, n[l.day] + ". "); }); })();
+
+// ===================== Day 4: Statistics =====================
+NOTES.push(
+  {id:"d4-meanmedian", day:4, type:"rule", title:"Mean ≫ median → right-skewed",
+   body:`<p>Titanic fare: mean 32.2, median 14.5. Report the <b>median</b> for skewed data (salaries, prices, fares).</p>`},
+  {id:"d4-ddof", day:4, type:"pitfall", title:"n vs n − 1",
+   body:`<p>Sample variance divides by <b>n − 1</b>. Simulated: dividing by n averaged 79.9 instead of the true 100.</p><p><code>np.std</code> ddof=0 · pandas <code>.std()</code> ddof=1 · <code>StandardScaler</code> ddof=0.</p>`},
+  {id:"d4-outlier", day:4, type:"rule", title:"Outliers: IQR for skewed data",
+   body:`<p>On fares, IQR flagged 116 and |z| &gt; 3 only 20: outliers inflate the std meant to catch them.</p>`},
+  {id:"d4-scale", day:4, type:"concept", title:"Three scalers",
+   body:`<table><tr><td>Standard</td><td>(x − mean)/std</td></tr><tr><td>Min–max</td><td>(x − min)/(max − min)</td></tr><tr><td>Robust</td><td>(x − median)/IQR</td></tr></table><p>Trees don't need scaling.</p>`},
+  {id:"d4-fittrain", day:4, type:"pitfall", title:"Fit the scaler on train only",
+   body:`<pre><code>make_pipeline(StandardScaler(), KNeighborsClassifier())</code></pre><p>k-NN: 93.0% unscaled → 97.9% standardised.</p>`},
+  {id:"d4-shape", day:4, type:"pitfall", title:"Scaling ≠ fixing skew",
+   body:`<p>Standardising changes units, not shape: skew stays 1.53. Use <code>log1p</code> to change shape.</p>`},
+  {id:"d4-clt", day:4, type:"concept", title:"Central Limit Theorem",
+   body:`<p>Sample means ≈ Normal(μ, σ/√n), whatever the population. 4× the data → half the uncertainty.</p>`},
+  {id:"d4-se", day:4, type:"rule", title:"Accuracy has error bars",
+   body:`<p>SE ≈ √(p(1−p)/n). 97.95% on 200 test rows: ±1 point SE; on 7,133 rows: ±0.17.</p>`},
+  {id:"d4-ci", day:4, type:"concept", title:"What 95% CI means",
+   body:`<p>95% of intervals built this way contain the true value. <b>Not</b> "95% chance μ is in this one".</p>`},
+  {id:"d4-boot", day:4, type:"code", title:"Bootstrap any CI",
+   body:`<pre><code>stats.bootstrap((x,), np.median).confidence_interval</code></pre><p>Resample with replacement, take the middle 95%.</p>`},
+  {id:"d4-pvalue", day:4, type:"concept", title:"p-value in one line",
+   body:`<p>P(a result this extreme | H₀ true). It is <b>not</b> P(H₀ true).</p>`},
+  {id:"d4-errors", day:4, type:"concept", title:"Type I vs Type II",
+   body:`<table><tr><td>Type I (α)</td><td>false positive</td></tr><tr><td>Type II (β)</td><td>false negative</td></tr><tr><td>Power</td><td>1 − β</td></tr></table>`},
+  {id:"d4-tests", day:4, type:"code", title:"Test cheat sheet",
+   body:`<table><tr><td>2 groups</td><td><code>ttest_ind(..., equal_var=False)</code></td></tr><tr><td>before/after</td><td><code>ttest_rel</code></td></tr><tr><td>3+ groups</td><td><code>f_oneway</code></td></tr><tr><td>categories</td><td><code>chi2_contingency</code></td></tr><tr><td>skewed, small</td><td><code>mannwhitneyu</code></td></tr></table>`},
+  {id:"d4-effect", day:4, type:"pitfall", title:"Significant ≠ important",
+   body:`<p>200k per group: p = 10⁻¹², Cohen's d = 0.02. Always report the effect size.</p>`},
+  {id:"d4-multiple", day:4, type:"pitfall", title:"20 tests → 64% false alarm",
+   body:`<p>1 − 0.95²⁰ = 64%. Use Bonferroni (α / tests) or confirm on new data.</p>`},
+  {id:"d4-peek", day:4, type:"rule", title:"A/B tests: decide n first",
+   body:`<p>Fix α, metric and sample size before starting. Stopping when p first dips below 0.05 inflates false positives.</p>`},
+);
+
+FORMULAS.push(
+  {id:"f4-trim", day:4, name:"Trimmed mean",
+   tex:R`\bar{x}_{\text{trim}} = \text{mean after removing the lowest and highest } k\% \text{ of values}`,
+   symbols:[[R`k`,"share cut from EACH end (10% → 20% removed in total)"]],
+   example:R`Titanic fare: mean 32.2, 10% trimmed mean <b>21.4</b>, median 14.5.<pre><code>stats.trim_mean(fare, 0.10)</code></pre>`,
+   use:"You want something between the mean (uses all values) and the median (robust): judges' scores in sport, noisy sensors."},
+  {id:"f4-se", day:4, name:"Standard error of the mean",
+   tex:R`\text{SE} = \frac{\sigma}{\sqrt{n}} \approx \frac{s}{\sqrt{n}}`,
+   symbols:[[R`\sigma,\ s`,"population / sample standard deviation"],[R`n`,"sample size"]],
+   example:R`Titanic fares σ = 49.7. Samples of n = 100 → SE = 49.7/10 = <b>4.97</b>; the simulation gave 4.93. n = 400 → <b>2.48</b>: 4× the data, half the error.`,
+   use:"How much a sample mean would wobble from sample to sample: the building block of confidence intervals and t-tests."},
+  {id:"f4-seprop", day:4, name:"Standard error of a proportion (e.g. accuracy)",
+   tex:R`\text{SE}(\hat p) = \sqrt{\frac{\hat p\,(1-\hat p)}{n}}`,
+   symbols:[[R`\hat p`,"observed proportion: accuracy, conversion rate"],[R`n`,"number of trials or test rows"]],
+   example:R`TextPulse spam accuracy 0.9795 on 7,133 rows → SE = √(0.9795 × 0.0205 / 7133) = <b>0.17%</b>. On 200 rows it would be <b>1.0%</b>.`,
+   use:"Deciding whether a model improvement is bigger than the noise in your test set."},
+  {id:"f4-clt", day:4, name:"Central Limit Theorem",
+   tex:R`\bar{X}_n \ \approx\ \mathcal{N}\!\left(\mu,\ \frac{\sigma^2}{n}\right) \quad \text{for large } n,\ \text{any population with finite } \sigma`,
+   symbols:[[R`\bar{X}_n`,"the mean of a random sample of size n"],[R`\mathcal{N}`,"normal distribution"]],
+   example:R`Titanic fares (skew 4.8): the skew of sample means falls 4.9 → 2.1 → 0.9 → 0.4 for n = 1, 5, 30, 100.`,
+   use:"Justifying normal-based confidence intervals and tests on non-normal data, as long as n is large enough."},
+  {id:"f4-ci", day:4, name:"Confidence interval for a mean",
+   tex:R`\bar{x} \ \pm\ t^{*}_{\,n-1}\cdot\frac{s}{\sqrt{n}}`,
+   symbols:[[R`t^{*}_{n-1}`,"t multiplier: stats.t.ppf(0.975, n−1) for 95% (≈ 1.96 for large n)"],[R`s/\sqrt{n}`,"standard error"]],
+   example:R`Tips: n = 244, x̄ = 2.998, s = 1.384 → SE 0.089, t* = 1.970 → 95% CI <b>(2.82, 3.17)</b>.<pre><code>stats.t.interval(0.95, df=n-1, loc=xbar, scale=s/np.sqrt(n))</code></pre>`,
+   use:"Reporting an estimate with its uncertainty. A wider interval means less certainty: get more data."},
+  {id:"f4-ciprop", day:4, name:"Confidence interval for a proportion",
+   tex:R`\hat p \ \pm\ 1.96\sqrt{\frac{\hat p(1-\hat p)}{n}}`,
+   symbols:[[R`1.96`,"z multiplier for 95% (stats.norm.ppf(0.975))"]],
+   example:R`Accuracy 97.95% on 7,133 rows → 97.95 ± 1.96 × 0.17 = <b>(97.6%, 98.3%)</b>.`,
+   use:"Error bars on accuracy, conversion rates and survey percentages (fine when n·p̂ and n·(1−p̂) are both above ~10)."},
+  {id:"f4-t", day:4, name:"One-sample t statistic",
+   tex:R`t = \frac{\bar{x} - \mu_0}{s/\sqrt{n}}, \qquad \text{df} = n - 1`,
+   symbols:[[R`\mu_0`,"the value claimed by H₀"],[R`t`,"how many standard errors the sample mean is from μ₀"]],
+   example:R`Tip % vs 15%: x̄ = 16.08%, n = 244 → t = <b>2.76</b>, p = 0.006 → tips average more than 15%.`,
+   use:"Testing one mean against a fixed target or claim."},
+  {id:"f4-pvalue", day:4, name:"p-value",
+   tex:R`p = P\big(\,|T| \ge |t_{\text{obs}}| \ \big|\ H_0\,\big)`,
+   symbols:[[R`T`,"the test statistic if H₀ were true"],[R`t_{\text{obs}}`,"the statistic from your data"]],
+   example:R`Dinner vs lunch tips: shuffling labels 10,000 times, 5.7% of gaps were at least as big as the real 0.375 → p ≈ <b>0.057</b>.`,
+   use:"Judging if a pattern could be luck. Reject H₀ when p < α (decided in advance)."},
+  {id:"f4-errors", day:4, name:"Type I error, Type II error and power",
+   tex:R`\alpha = P(\text{reject } H_0 \mid H_0 \text{ true}) \qquad \beta = P(\text{keep } H_0 \mid H_1 \text{ true}) \qquad \text{power} = 1-\beta`,
+   symbols:[[R`\alpha`,"false-positive rate you accept (usually 0.05)"],[R`\beta`,"false-negative rate (often 0.2 → power 0.8)"]],
+   example:R`With α = 0.05, a test on two identical buttons still says "significant" about 5% of the time. Power 0.8 means a real effect of the planned size is detected 80% of the time.`,
+   use:"Designing experiments: power rises with sample size and effect size, and falls when α is made stricter."},
+  {id:"f4-d", day:4, name:"Cohen's d (effect size)",
+   tex:R`d = \frac{\bar{x}_1 - \bar{x}_2}{s_p}, \qquad s_p = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}}`,
+   symbols:[[R`s_p`,"pooled standard deviation"],[R`d`,"0.2 small · 0.5 medium · 0.8 large"]],
+   example:R`Two groups of 200,000 with means 100.0 and 100.3, σ = 15 → p ≈ 10⁻¹², but d = <b>0.02</b>: real yet negligible.`,
+   use:"Always alongside a p-value, to say whether the difference matters in practice."},
+  {id:"f4-ztwo", day:4, name:"Two-proportion z-test (A/B test)",
+   tex:R`z = \frac{\hat p_B - \hat p_A}{\sqrt{\hat p(1-\hat p)\left(\frac{1}{n_A}+\frac{1}{n_B}\right)}}, \qquad \hat p = \frac{x_A + x_B}{n_A + n_B}`,
+   symbols:[[R`x_A,\ x_B`,"conversions in each group"],[R`\hat p`,"pooled rate assuming H₀ (no difference)"]],
+   example:R`A: 420/10,000 = 4.20%, B: 485/10,000 = 4.85% → z = <b>2.21</b>, p = 0.027; 95% CI for the lift +0.07 to +1.23 points.`,
+   use:"Comparing two conversion, click or churn rates."},
+  {id:"f4-n", day:4, name:"Sample size per group for an A/B test",
+   tex:R`n = \frac{\Big(z_{1-\alpha/2}\sqrt{2\bar p(1-\bar p)} + z_{1-\beta}\sqrt{p_1(1-p_1)+p_2(1-p_2)}\Big)^2}{(p_2-p_1)^2}`,
+   symbols:[[R`z_{1-\alpha/2}`,"1.96 for α = 0.05"],[R`z_{1-\beta}`,"0.84 for 80% power"],[R`\bar p`,"average of p₁ and p₂"]],
+   example:R`Detecting 4.2% → 4.7% with 80% power needs <b>26,698</b> visitors per group. Halving the lift to detect needs about 4× as many.`,
+   use:"Before launching an experiment, so you don't stop too early or run a test that can't detect the effect."},
+  {id:"f4-bonf", day:4, name:"Multiple testing and Bonferroni",
+   tex:R`P(\text{at least one false positive in } m \text{ tests}) = 1 - (1-\alpha)^m \qquad \alpha_{\text{each}} = \frac{\alpha}{m}`,
+   symbols:[[R`m`,"number of tests run"]],
+   example:R`20 useless features at α = 0.05: 1 − 0.95²⁰ = <b>64%</b> chance of at least one "discovery" (the simulation gave 64.2%). Bonferroni: test each at 0.05/20 = 0.0025.`,
+   use:"Testing many features, metrics or segments at once."},
+  {id:"f4-robust", day:4, name:"Robust scaling",
+   tex:R`x' = \frac{x - \text{median}}{Q_3 - Q_1}`,
+   symbols:[[R`Q_3 - Q_1`,"interquartile range"]],
+   example:R`Fare with median 14.45 and IQR 23.09: a fare of 512 → (512 − 14.45)/23.09 = <b>21.5</b>; a fare of 7.25 → <b>−0.31</b>.`,
+   use:"Features with strong outliers, where the mean and std would be distorted. <code>RobustScaler</code> in scikit-learn."},
+);
+
+LESSONS.push(
+  {id:"l4-describe", day:4, title:"1. Describing data: centre, spread and shape",
+   body:R`<p>Every dataset summary answers three questions: <b>where is the middle?</b> <b>how spread out is it?</b> <b>what shape is it?</b></p>
+<table><tr><th></th><th>Sensitive to outliers</th><th>Robust</th></tr>
+<tr><td>Centre</td><td>mean</td><td>median, trimmed mean</td></tr>
+<tr><td>Spread</td><td>std, variance, range</td><td>IQR, MAD</td></tr></table>
+<p>Titanic fare shows why it matters: mean 32.2, 10% trimmed mean 21.4, median 14.5. One very expensive ticket moves the mean but not the median. Add one billionaire to seven café customers earning about 42k, and the mean jumps to 125,037k while the median barely moves (42 → 43.5).</p>
+<h4>Sample variance and n − 1</h4>
+<p>Deviations are measured from the sample mean, which sits closer to the sample than the true mean does, so the raw average of squared deviations is too small. Dividing by n − 1 corrects it. In the notebook's simulation (true variance 100, samples of 5), dividing by n averaged 79.9, and dividing by n − 1 averaged 99.9.</p>
+<h4>Shape</h4>
+<p><b>Skewness</b> &gt; 0: long right tail (mean &gt; median). <b>Kurtosis</b>: heavy tails, i.e. frequent extremes (pandas reports excess kurtosis, so normal = 0). Fare has skew 4.79 and kurtosis 33.4; after <code>log1p</code>, 0.39 and 0.98.</p>
+<h4>Outliers</h4>
+<p>IQR rule (beyond Q1 − 1.5·IQR or Q3 + 1.5·IQR) flagged 116 fares; the |z| &gt; 3 rule flagged 20, because outliers inflate the std that z uses. Use IQR for skewed data, and look at a box plot before removing anything.</p>`},
+  {id:"l4-scaling", day:4, title:"2. Normalisation vs standardisation (and why it changes results)",
+   body:R`<p>Distance-based models (k-NN, k-means, SVM) and gradient-trained models (logistic regression, neural networks) are sensitive to feature <b>units</b>. In the breast-cancer data, <code>mean area</code> averages 655 while <code>mean smoothness</code> averages 0.096. Without scaling, area dominates every distance just because of its units.</p>
+<table><tr><th>Scaler</th><th>Formula</th><th>k-NN test accuracy</th></tr>
+<tr><td>none</td><td>-</td><td>93.0%</td></tr>
+<tr><td>StandardScaler</td><td>(x − mean) / std</td><td>97.9%</td></tr>
+<tr><td>MinMaxScaler</td><td>(x − min) / (max − min)</td><td>98.6%</td></tr>
+<tr><td>RobustScaler</td><td>(x − median) / IQR</td><td>95.8%</td></tr></table>
+<p>Which scaler wins depends on the data, so treat it as a choice to validate. <b>Standardisation</b> is the usual default; <b>min–max</b> when you need a fixed 0–1 range; <b>robust</b> when outliers are strong. Trees and forests don't need scaling.</p>
+<h4>The leakage rule</h4>
+<pre><code>X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=42)
+model = make_pipeline(StandardScaler(), KNeighborsClassifier(5))
+model.fit(X_train, y_train)     # scaler learns means/stds from TRAIN only
+model.score(X_test, y_test)     # test is transformed with the TRAIN statistics</code></pre>
+<p>After scaling, the training data has mean 0 and std 1 exactly; the test data has roughly (0.02, 0.96). That's correct: the test data must not influence the scaler.</p>
+<div class="warn">Scaling doesn't change the shape: a skew of 1.53 stays 1.53 after standardising. To fix skew, transform (log1p) first, then scale.</div>`},
+  {id:"l4-sampling", day:4, title:"3. Populations, samples and sampling bias",
+   body:R`<p>A <b>parameter</b> (μ, σ, p) describes the population and is usually unknown. A <b>statistic</b> (x̄, s, p̂) is computed from your sample to estimate it. All of inferential statistics is about how close the statistic is likely to be.</p>
+<ul><li><b>Simple random</b>: everyone equally likely.</li>
+<li><b>Stratified</b>: random within groups, keeping group proportions. With 5% positives, random 20% test splits ranged from 2.0% to 8.5% positives; stratified splits were 5.0% every time.</li>
+<li><b>Systematic</b>: every k-th item. <b>Cluster</b>: random whole groups.</li></ul>
+<h4>Bias beats size</h4>
+<p>A biased sample stays biased however large it gets. Examples: a loan model trained only on approved applicants (selection bias); studying only successful startups (survivorship bias); a survey only unhappy customers answer (non-response bias). In ML this shows up as models that fail on the people missing from the training data.</p>`},
+  {id:"l4-clt", day:4, title:"4. The Central Limit Theorem and standard error",
+   body:R`<p>Take many samples of size n, compute each sample's mean, and plot those means. The CLT says the plot is approximately <b>normal</b>, centred on the true mean μ, with standard deviation <b>σ/√n</b> (the standard error), whatever the population looks like.</p>
+<p>Using the 891 Titanic fares as the population (skew 4.8), the skew of the sample means fell to 2.1 at n = 5, 0.9 at n = 30 and 0.4 at n = 100. The measured spread matched σ/√n: 9.00 vs 9.07 at n = 30, 2.49 vs 2.48 at n = 400.</p>
+<ul><li>The "n ≥ 30" rule of thumb is for mildly skewed data. Very skewed data needs more.</li>
+<li>Error falls with √n: <b>4× the data halves the uncertainty</b>.</li>
+<li>The CLT is about the <b>mean</b>, not the data: the fares themselves never become normal.</li></ul>
+<h4>Why ML engineers care</h4>
+<p>Test accuracy is a mean of 0/1 values, so its standard error is √(p(1−p)/n). At 97.95% accuracy, that's ±1.0 points on 200 test rows but ±0.17 on 7,133 rows. A 0.5-point "improvement" on a small test set is probably noise.</p>`},
+  {id:"l4-ci", day:4, title:"5. Confidence intervals, and the bootstrap",
+   body:R`\[\bar{x} \pm t^{*}\,\frac{s}{\sqrt{n}}\]
+<p>Tips: n = 244, mean 2.998, s = 1.384 → SE = 0.089, t* = 1.970 → 95% CI (2.82, 3.17). The t multiplier is slightly bigger than 1.96 because s is itself an estimate; for large n they're equal.</p>
+<h4>The correct interpretation</h4>
+<p>"95% confidence" describes the <b>method</b>: across many repeated samples, 95% of intervals built this way contain the true mean. Any one interval either contains it or doesn't. In the notebook, 1,000 intervals from a skewed population with n = 25 caught the true mean 93.3% of the time, slightly short because the CLT is only approximate at that size, and the misses were almost all on the low side.</p>
+<h4>Bootstrap: an interval for any statistic</h4>
+<pre><code>boot = [np.median(rng.choice(x, len(x), replace=True)) for _ in range(10_000)]
+np.percentile(boot, [2.5, 97.5])              # median tip: (2.50, 3.00)
+stats.bootstrap((x,), np.median).confidence_interval</code></pre>
+<p>Resampling your own data with replacement imitates drawing new samples. It works for medians, percentiles, F1 scores or AUC, where no simple formula exists, and it's how you put error bars on model metrics.</p>`},
+  {id:"l4-tests", day:4, title:"6. Hypothesis testing step by step",
+   body:R`<ol><li>State <b>H₀</b> (no effect) and <b>H₁</b> (an effect).</li>
+<li>Choose <b>α</b> (usually 0.05) before looking at the data.</li>
+<li>Compute the test statistic and the <b>p-value</b>: P(a result at least this extreme | H₀ true).</li>
+<li>If p &lt; α, reject H₀; otherwise "fail to reject" (not "H₀ is proven").</li>
+<li>Report the <b>effect size</b> and a <b>confidence interval</b>, not just p.</li></ol>
+<h4>A p-value built by hand: permutation test</h4>
+<p>Dinner tips averaged 0.375 more than lunch tips. Shuffling the dinner/lunch labels 10,000 times (what H₀ says is harmless), 5.7% of shuffles gave a gap at least that big, so p ≈ 0.057. Welch's t-test gave 0.041. Borderline results like this are weak evidence, and the methods even disagree about the 0.05 line. Also, dinner bills are bigger, so the gap in rupees may just follow the bill.</p>
+<h4>Errors and power</h4>
+<table><tr><th></th><th>H₀ true</th><th>H₀ false</th></tr>
+<tr><td>Reject</td><td>Type I (α): false positive</td><td>correct (power)</td></tr>
+<tr><td>Don't reject</td><td>correct</td><td>Type II (β): false negative</td></tr></table>
+<p>It's the same trade-off as precision and recall. Power grows with sample size and effect size.</p>
+<h4>Choosing the test</h4>
+<table><tr><th>Situation</th><th>Test</th><th>Notebook result</th></tr>
+<tr><td>one mean vs a value</td><td>one-sample t</td><td>tip % 16.08 vs 15: t = 2.76, p = 0.006</td></tr>
+<tr><td>two independent groups</td><td>Welch t</td><td>dinner vs lunch tips: p = 0.041</td></tr>
+<tr><td>same subjects before/after</td><td>paired t</td><td>p = 9 × 10⁻⁷ (unpaired: 0.083)</td></tr>
+<tr><td>3+ groups</td><td>ANOVA</td><td>tip % by day: p = 0.47</td></tr>
+<tr><td>two categorical variables</td><td>chi-square</td><td>smoker vs time: p = 0.48</td></tr>
+<tr><td>skewed, small samples</td><td>Mann–Whitney U</td><td>-</td></tr></table>
+<p>The paired test was far stronger on the same data because each student is compared with themselves, which removes the differences between students.</p>`},
+  {id:"l4-pitfalls", day:4, title:"7. Pitfalls: significance vs importance, multiple tests, peeking",
+   body:R`<ul><li><b>Significant ≠ important.</b> Two groups of 200,000 differing by 0.3 on a scale with σ = 15 gave p ≈ 10⁻¹² but Cohen's d = 0.02: real, and practically irrelevant. Report effect sizes.</li>
+<li><b>Multiple testing.</b> Testing 20 useless features at α = 0.05 gives at least one false "discovery" 64% of the time (simulated: 64.2%). Use Bonferroni (α/m) or confirm findings on fresh data.</li>
+<li><b>Peeking.</b> Checking an A/B test daily and stopping the first time p &lt; 0.05 greatly raises the false-positive rate. Fix the sample size first.</li>
+<li><b>p-value myths.</b> p is not the probability H₀ is true, not the probability the result is a fluke, and p &gt; 0.05 doesn't prove "no effect" (the test may lack power).</li>
+<li><b>Correlation ≠ causation</b>, even when significant. Only randomised experiments (like A/B tests) support causal claims directly.</li></ul>`},
+  {id:"l4-ab", day:4, title:"8. A/B testing end to end",
+   body:R`<ol><li><b>Design</b>: one metric (sign-up rate), α = 0.05, power 80%, minimum lift worth detecting → sample size. Detecting 4.2% → 4.7% needs about 26,700 visitors per group.</li>
+<li><b>Randomise</b> visitors into A and B, so the only systematic difference is the change.</li>
+<li><b>Run</b> to the planned size without peeking.</li>
+<li><b>Analyse</b> with a two-proportion z-test: A 420/10,000 = 4.20%, B 485/10,000 = 4.85% → z = 2.21, p = 0.027.</li>
+<li><b>Report</b> the effect with an interval: "+0.65 points (+15.5% relative), 95% CI +0.07 to +1.23 points".</li></ol>
+<p>The honest caveat: this test used 10,000 per group, below the ~27,000 planned for 80% power, so reaching significance was partly luck, and the true lift could be very small. A real team would often extend the test or re-run it to confirm.</p>`},
+);
+
+INTERVIEW.push(
+  {id:"i4-meanmedian", day:4, level:"basic", q:"When would you use the median instead of the mean?",
+   say:R`When the data is skewed or has outliers, like income, prices or response times, because the median isn't pulled by extreme values. If the mean is much bigger than the median, that's a sign of right skew.`,
+   a:R`<p>Titanic fare: mean 32.2 vs median 14.5. For categories, use the mode. For a compromise, a trimmed mean (10%: 21.4). In ML, use the median to impute skewed features, and median absolute error when you don't want a few huge errors to dominate.</p>`},
+  {id:"i4-stdvar", day:4, level:"basic", q:"What's the difference between variance and standard deviation? Why n − 1?",
+   say:R`Variance is the average squared distance from the mean; the standard deviation is its square root, back in the original units. For a sample we divide by n − 1, because deviations from the sample mean are systematically too small; that correction makes the estimate unbiased.`,
+   a:R`<p>Simulation: true variance 100, samples of 5 → dividing by n averaged 79.9, dividing by n − 1 averaged 99.9. Library defaults differ: NumPy ddof=0, pandas ddof=1, StandardScaler ddof=0.</p>`},
+  {id:"i4-scale", day:4, level:"basic", q:"Normalisation vs standardisation: what's the difference and when do you use each?",
+   say:R`Standardisation rescales to mean 0 and standard deviation 1; normalisation (min–max) rescales to a 0–1 range. I standardise by default for linear models, SVMs, k-NN and neural nets; min–max when a bounded range is needed; robust scaling when there are outliers; and nothing for tree models.`,
+   a:R`<p>On the breast-cancer data, k-NN went from 93.0% (unscaled) to 97.9% (standardised) and 98.6% (min–max). Min–max is sensitive to outliers because one extreme value sets the max. Always fit the scaler on training data only, ideally inside a Pipeline.</p>`},
+  {id:"i4-pvalue", day:4, level:"basic", q:"What is a p-value? What is it not?",
+   say:R`The probability of getting a result at least as extreme as what we observed, assuming the null hypothesis is true. It's not the probability that the null hypothesis is true, and it says nothing about how big or important the effect is.`,
+   a:R`<p>Simple way to explain it: "if there were really no difference, how surprising would this data be?" A permutation test makes it concrete: shuffle the group labels many times and see how often chance alone produces a difference this large (dinner vs lunch tips: 5.7% → p ≈ 0.057). p &gt; 0.05 doesn't prove there's no effect; the test may simply lack power.</p>`},
+  {id:"i4-errors", day:4, level:"basic", q:"Explain Type I and Type II errors with an example.",
+   say:R`A Type I error is a false positive: rejecting a true null hypothesis, like launching a button that doesn't actually help. A Type II error is a false negative: missing a real effect. α controls the Type I rate; power, 1 − β, is the chance of catching a real effect.`,
+   a:R`<p>Medical analogy: Type I = telling a healthy person they're sick; Type II = missing a real disease. Lowering α reduces false positives but increases false negatives unless you collect more data. It's the same trade-off as precision vs recall when you move a classifier's threshold.</p>`},
+  {id:"i4-clt", day:4, level:"mid", q:"Explain the Central Limit Theorem and why it matters in ML.",
+   say:R`The distribution of sample means approaches a normal distribution as the sample size grows, centred on the true mean with spread σ/√n, whatever the original distribution looks like. It's why we can build confidence intervals and run t-tests on non-normal data, and why metrics like accuracy have predictable error bars.`,
+   a:R`<p>Demo: Titanic fares (skew 4.8) → the skew of sample means drops to 0.9 at n = 30 and 0.4 at n = 100, and the spread matches σ/√n. Practical uses: error bars on accuracy (√(p(1−p)/n)), A/B tests, and understanding why mini-batch gradients are noisy but unbiased estimates of the full gradient.</p>`},
+  {id:"i4-ci", day:4, level:"mid", q:"What does a 95% confidence interval mean?",
+   say:R`If we repeated the sampling and built an interval the same way many times, about 95% of those intervals would contain the true value. It's a statement about the method, not a 95% probability that the true value is in this particular interval.`,
+   a:R`<p>Formula for a mean: x̄ ± t*·s/√n. The simulation built 1,000 intervals and 93.3% caught the true mean: slightly under 95% because the population was skewed and n was small. For statistics without a formula (median, F1, AUC), use the bootstrap.</p>`},
+  {id:"i4-whichtest", day:4, level:"mid", q:"Which test would you use to compare two groups? What if the data is paired or very skewed?",
+   say:R`Two independent groups with a numeric outcome: Welch's t-test, which doesn't assume equal variances. The same subjects measured twice: a paired t-test. Very skewed data with small samples: Mann–Whitney U. Three or more groups: ANOVA. Two categorical variables: chi-square.`,
+   a:R`<p>Using the right test matters: on simulated before/after scores, the paired test gave p = 9 × 10⁻⁷ while the (wrong) unpaired test gave 0.083 on exactly the same numbers. Pairing removes the variation between subjects.</p>`},
+  {id:"i4-se", day:4, level:"mid", q:"Your new model scores 0.5% higher accuracy on a test set of 500 rows. Is it better?",
+   say:R`Probably not provably. The standard error of an accuracy around 90% on 500 rows is about 1.3 points, so a 0.5-point gain is well within noise. I'd use a larger test set, cross-validation, or a paired test like McNemar's on the two models' predictions for the same rows.`,
+   a:R`<p>SE = √(0.9 × 0.1 / 500) ≈ 0.0134. Comparing two models on the same rows is a paired situation, which McNemar's test handles, using only the rows where the models disagree. Bootstrap the difference in accuracy for a confidence interval.</p>`},
+  {id:"i4-boot", day:4, level:"mid", q:"What is bootstrapping?",
+   say:R`Resampling your dataset with replacement many times, computing the statistic each time, and using the spread of those results as its uncertainty. It gives confidence intervals for statistics that have no simple formula.`,
+   a:R`<p>Median tip: 95% bootstrap CI (2.50, 3.00). Uses in ML: confidence intervals for F1 or AUC, comparing models, and bagging/Random Forests, which train each tree on a bootstrap sample. Limitation: it can't fix a biased or tiny sample, because it only resamples what you have.</p>`},
+  {id:"i4-sig", day:4, level:"adv", q:"A result is statistically significant with p = 0.001. Should the business act on it?",
+   say:R`Not on p alone. I'd look at the effect size and its confidence interval, whether it matters practically, whether the test was planned (no peeking or many comparisons), and whether the sample represents the users we care about.`,
+   a:R`<p>With 200,000 per group, a difference of 0.02 standard deviations gives p ≈ 10⁻¹². Statistically real, practically meaningless. Also check: multiple testing (20 metrics → 64% chance of a false "win"), novelty effects in A/B tests, and segment consistency.</p>`},
+  {id:"i4-ab", day:4, level:"adv", q:"How would you design and analyse an A/B test?",
+   say:R`Define one primary metric and the minimum effect worth detecting, choose α and power, compute the sample size, randomise users, run to that size without peeking, then use a two-proportion z-test and report the lift with a confidence interval and any guardrail metrics.`,
+   a:R`<p>Example: 4.20% vs 4.85% on 10,000 per group → z = 2.21, p = 0.027, lift +0.65 points (95% CI +0.07 to +1.23). Detecting 4.2 → 4.7% with 80% power needs about 26,700 per group, so this test was underpowered. Other pitfalls: sample-ratio mismatch (unequal group sizes signal a bug), novelty effects, and network effects between users.</p>`},
+  {id:"i4-multiple", day:4, level:"adv", q:"What is the multiple comparisons problem and how do you handle it?",
+   say:R`Every test has an α chance of a false positive, so running many tests almost guarantees some false discoveries: with 20 tests at 0.05, the chance of at least one is 64%. I'd use a correction like Bonferroni or Benjamini–Hochberg, or confirm findings on new data.`,
+   a:R`<p>Bonferroni (α/m) controls the chance of any false positive, but it's conservative. Benjamini–Hochberg controls the false discovery rate and is better when screening many features. In ML, this is the same reason that trying many models or hyperparameters on one validation set overfits it, which is why you keep a final, untouched test set.</p>`},
+  {id:"i4-skew", day:4, level:"adv", q:"Does standardising a feature make it normally distributed?",
+   say:R`No. Standardising only shifts and rescales; the shape, including skewness, stays exactly the same. To reduce skew you need a non-linear transform such as log, square root, or Box-Cox/Yeo-Johnson.`,
+   a:R`<p>In the notebook, <code>mean area</code> had skew 1.526 before and after StandardScaler. Titanic fare's skew went from 4.79 to 0.39 with log1p. scikit-learn's <code>PowerTransformer</code> does Yeo-Johnson automatically. Many models don't need normal features at all; it matters most for linear models' residuals and for distance-based methods.</p>`},
+);
 
 
 // ---------- state (per-viewer conveniences only) ----------
