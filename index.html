@@ -86,7 +86,7 @@ h1{font-family:var(--f-note);font-weight:700;font-size:clamp(30px,5vw,42px);line
 const TYPES = {
   concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}
 };
-const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas"};
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability"};
 
 const NOTES = [
   // ---------- Day 1 ----------
@@ -158,6 +158,48 @@ c = a.copy()         # independent copy</code></pre>`},
   {id:"d2-cut", day:2, type:"code", title:"Bin a number into bands",
    body:`<pre><code>pd.cut(df.age, bins=[0,12,18,60,80],
        labels=["child","teen","adult","60+"])</code></pre>`},
+
+  // ---------- Day 3 ----------
+  {id:"d3-freq", day:3, type:"concept", title:"Probability = long-run frequency",
+   body:`<p>Not sure about a formula? Simulate it 100,000 times and count. The law of large numbers says the frequency settles on the true probability.</p>`},
+  {id:"d3-complement", day:3, type:"rule", title:"\"At least one\" → use the complement",
+   body:`<p>P(at least one) = 1 − P(none)</p><p>P(≥1 six in 4 rolls) = 1 − (5/6)⁴ = 0.518</p>`},
+  {id:"d3-addition", day:3, type:"rule", title:"Addition rule",
+   body:`<p>P(A or B) = P(A) + P(B) − P(A and B)</p><p>Drop the last term <b>only</b> when A and B are mutually exclusive.</p>`},
+  {id:"d3-conditional", day:3, type:"concept", title:"Conditional probability",
+   body:`<p>P(A | B) = P(A and B) / P(B)</p><p>Shrink the world to B, then ask how much of it is A.</p>`},
+  {id:"d3-indep", day:3, type:"concept", title:"Independent vs dependent",
+   body:`<table><tr><td>Independent</td><td>P(A|B) = P(A), so P(A and B) = P(A)·P(B)</td></tr><tr><td>Dependent</td><td>P(A and B) = P(A)·P(B|A)</td></tr></table><p>Cards with replacement are independent; without replacement they're dependent.</p>`},
+  {id:"d3-feature", day:3, type:"rule", title:"Useful feature = dependent target",
+   body:`<p>If P(target | feature) is the same for every feature value, the feature carries no information.</p><p>Titanic: P(survived | female) 0.74 vs P(survived) 0.38.</p>`},
+  {id:"d3-bayes", day:3, type:"concept", title:"Bayes' theorem",
+   body:`<p>P(A | B) = P(B | A) · P(A) / P(B)</p><table><tr><td>P(A)</td><td>prior</td></tr><tr><td>P(B|A)</td><td>likelihood</td></tr><tr><td>P(A|B)</td><td>posterior</td></tr></table>`},
+  {id:"d3-total", day:3, type:"code", title:"Law of total probability",
+   body:`<p>P(B) = P(B|A)·P(A) + P(B|not A)·P(not A)</p><p>This is the denominator in almost every Bayes problem.</p>`},
+  {id:"d3-baserate", day:3, type:"pitfall", title:"The base-rate trap",
+   body:`<p>1% have a disease; the test catches 99% with 5% false alarms. A positive result means only a <b>16.7%</b> chance of disease.</p><p>Count 10,000 people to see why.</p>`},
+  {id:"d3-imbalance", day:3, type:"rule", title:"Rare class → don't trust accuracy",
+   body:`<p>A fraud model with 99% recall still gives mostly false alarms when fraud is rare. Judge it by precision and recall (Day 9).</p>`},
+  {id:"d3-rv", day:3, type:"concept", title:"Discrete vs continuous",
+   body:`<table><tr><td>Discrete</td><td>countable values; PMF gives P(X = x)</td></tr><tr><td>Continuous</td><td>any value; PDF gives a density, P(X = exactly x) = 0</td></tr></table>`},
+  {id:"d3-density", day:3, type:"pitfall", title:"PDF height isn't a probability",
+   body:`<p>A density can be greater than 1. Only the <b>area</b> under the PDF is a probability, and the total area is always 1.</p>`},
+  {id:"d3-cdf", day:3, type:"rule", title:"Ranges come from the CDF",
+   body:`<p>F(x) = P(X ≤ x)</p><p>P(a < X ≤ b) = F(b) − F(a)</p>`},
+  {id:"d3-dists", day:3, type:"concept", title:"Four distributions",
+   body:`<table><tr><td>Bernoulli(p)</td><td>one yes/no trial</td></tr><tr><td>Binomial(n, p)</td><td>successes in n trials; mean np</td></tr><tr><td>Poisson(λ)</td><td>events per interval; mean λ</td></tr><tr><td>Normal(μ, σ)</td><td>sums of many small effects</td></tr></table>`},
+  {id:"d3-scipy", day:3, type:"code", title:"scipy.stats methods",
+   body:`<table><tr><td><code>.pmf / .pdf</code></td><td>height at x</td></tr><tr><td><code>.cdf(x)</code></td><td>P(X ≤ x)</td></tr><tr><td><code>.sf(x)</code></td><td>P(X > x)</td></tr><tr><td><code>.ppf(q)</code></td><td>value at percentile q</td></tr></table><pre><code>stats.binom(200, .03).sf(9)  # P(X ≥ 10)</code></pre>`},
+  {id:"d3-sf", day:3, type:"pitfall", title:"sf(9) means \"10 or more\"",
+   body:`<p>For discrete variables, <code>sf(k)</code> = P(X > k). To get P(X ≥ 10), call <code>sf(9)</code>.</p>`},
+  {id:"d3-6895", day:3, type:"rule", title:"68–95–99.7 rule",
+   body:`<p>For a normal distribution, 68% of values lie within 1σ of the mean, 95% within 2σ and 99.7% within 3σ.</p>`},
+  {id:"d3-nb", day:3, type:"concept", title:"Naive Bayes in one line",
+   body:`<p>score(class) = log P(class) + Σ log P(word | class)</p><p>"Naive" means words are assumed independent given the class. It's false, but it works well.</p>`},
+  {id:"d3-laplace", day:3, type:"rule", title:"Laplace smoothing",
+   body:`<p>(count + 1) / (total + vocab size)</p><p>Stops one unseen word from making the whole product 0.</p>`},
+  {id:"d3-logs", day:3, type:"pitfall", title:"Multiply probabilities → add logs",
+   body:`<p>(10⁻⁵)¹⁰⁰ underflows to 0.0. Summing the logs gives −1151, which is fine. Always work in log space for long products.</p>`},
 ];
 
 // ---------- state ----------
