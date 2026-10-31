@@ -314,6 +314,27 @@ c = a.copy()         # independent copy</code></pre>`},
   sublinear_tf=True)</code></pre>`},
   {id:"p-static", day:"P", type:"rule", title:"Free hosting trick",
    body:`<p>Docker Spaces need PRO; static Spaces are free. Export the weights to JSON and run the maths in the browser, after verifying it matches scikit-learn.</p>`},
+  // ---------- added in the completeness check ----------
+  {id:"d1-strings", day:1, type:"code", title:"String essentials",
+   body:`<pre><code>s.strip().title()   " ".join(parts)
+s[::-1]             s[1:3]
+f"{avg:6.2f} {pct:.1%}"</code></pre><p>Strings are immutable: methods return new strings.</p>`},
+  {id:"d1-main", day:1, type:"code", title:"if __name__ == \"__main__\"",
+   body:`<p>Code under it runs only when the file is executed directly, not when it's imported. One file = reusable module + script.</p>`},
+  {id:"d1-mapfilter", day:1, type:"rule", title:"map/filter → prefer comprehensions",
+   body:`<p><code>[n for n, m in rows if m &gt;= 80]</code> beats <code>list(filter(lambda ...))</code>. <code>sorted()</code> returns a new list; <code>.sort()</code> returns None.</p>`},
+  {id:"d2-figax", day:2, type:"code", title:"Figure vs Axes",
+   body:`<pre><code>fig, axes = plt.subplots(1, 3)
+axes[0].hist(x); axes[0].set(title="...")
+sns.boxplot(..., ax=axes[1])</code></pre>`},
+  {id:"d2-tests", day:2, type:"rule", title:"Pick the test by data type",
+   body:`<table><tr><td>cat vs cat</td><td>chi-square</td></tr><tr><td>num vs 2 groups</td><td>Welch t-test</td></tr><tr><td>num vs num</td><td>correlation</td></tr></table><p>Tiny p = unlikely to be chance, not necessarily important.</p>`},
+  {id:"d2-fit", day:2, type:"concept", title:"Fit = minimise a loss",
+   body:`<pre><code>optimize.minimize(lambda w: (w-3)**2 + 1, x0=0)  # w = 3</code></pre><p>Every ML model trains this way, with more parameters.</p>`},
+  {id:"d3-axioms", day:3, type:"concept", title:"Three axioms",
+   body:`<p>0 ≤ P(A) ≤ 1 · P(S) = 1 · P(A or B) = P(A) + P(B) when they can't co-occur. Everything else follows.</p>`},
+  {id:"d3-push", day:3, type:"rule", title:"Explain NB with word pushes",
+   body:`<p>push(w) = log P(w|spam)/P(w|ham). Sum the pushes + log prior odds. A total of 0 is a tie.</p>`},
 ];
 
 const FORMULAS = [
@@ -793,6 +814,13 @@ df["age_band"] = pd.cut(df.age, [0, 12, 18, 60, 80], labels=["child", "teen", "a
 <li><b>Multivariate</b>: sex × class pivot: 3rd-class women 50%, 1st-class men 37%.</li>
 <li><b>Statistical tests</b>: chi-square test for sex vs survival gives p ≈ 10⁻⁵⁸, so the link is not chance.</li>
 <li><b>Features</b>: family_size = sibsp + parch + 1, is_alone, title from the name, age bands.</li></ol>
+<h4>Findings you'd present to a manager</h4>
+<ol><li><b>Sex is the strongest signal</b>: 74% of women survived vs 19% of men.</li>
+<li><b>Class matters on its own</b>: even among women, 1st class 97% vs 3rd class 50%.</li>
+<li><b>Children</b> (12 and under) survived at 58%, more than any adult age band; the 60+ band fared worst at 23%.</li>
+<li><b>Family size is non-linear</b>: alone 30%, families of 2–4 between 55% and 72%, families of 5+ at 33% or less.</li>
+<li><b>Fare</b> is linked to survival but is mostly a proxy for class, so a model shouldn't double-count it.</li>
+<li><b>Data quality</b>: deck dropped (77% missing), age imputed by class and sex, <code>alive</code> removed as a target leak.</li></ol>
 <h4>Two traps EDA must catch</h4>
 <ul><li><b>Target leakage</b>: the column <code>alive</code> is just <code>survived</code> in words. A model would score 100% and be useless. Ask of every column: <i>would I know this value at prediction time?</i></li>
 <li><b>Correlation blind spots</b>: the heatmap only shows numeric, linear relationships. <code>sex</code>, the strongest predictor, doesn't even appear in it.</li></ul>`},
@@ -815,6 +843,7 @@ LESSONS.push(
   // ===================== Day 3: Probability =====================
   {id:"l3-what", day:3, title:"1. What probability means: events, sample spaces, simulation",
    body:R`<p>The <b>sample space</b> is the set of every possible outcome (a die: {1, 2, 3, 4, 5, 6}). An <b>event</b> is any group of outcomes ("even" = {2, 4, 6}). A probability is a number from 0 (impossible) to 1 (certain).</p>
+<p><b>The three axioms</b> every probability obeys: (1) 0 ≤ P(A) ≤ 1; (2) P(S) = 1, so something must happen; (3) if A and B can't happen together, P(A or B) = P(A) + P(B). All the other rules are derived from these.</p>
 <ul><li><b>Frequentist view</b>: probability is the long-run frequency. Flip a coin 100,000 times and heads settles near 0.5. This is the <b>law of large numbers</b>.</li>
 <li><b>Bayesian view</b>: probability is a degree of belief that you update as evidence arrives (Bayes' theorem).</li></ul>
 <p>In ML you use both: you estimate probabilities from data counts (frequentist), and models like Naive Bayes update beliefs with evidence (Bayesian).</p>
@@ -911,6 +940,8 @@ d.mean(), d.var()   # 5.0, 2.5</code></pre>`},
 <p><b>Step 5 – normalise</b>: P(spam | email) = 0.00178 / (0.00178 + 0.00030) = <b>0.857 → SPAM</b>.</p>
 <h4>Why "naive"?</h4>
 <p>It assumes every word is independent of the others once you know the class, so it can just multiply. That's false ("click" and "here" go together), but the classifier still ranks classes well, because it only needs the <b>biggest</b> score to win, not exact probabilities.</p>
+<h4>Explaining the decision</h4>
+<p>In log form each word adds its <b>push</b> = log(P(w | spam) / P(w | ham)): free +0.41, cash +0.69, prize +0.69, meeting −0.69. "free cash prize" totals +1.79 → odds e^1.79 = 6 : 1 → 6/7 = 0.857. If the pushes cancel to exactly 0 (e.g. "free meeting" with "prize" vs "team"), it's a tie: 50/50, and you need a tie-break rule.</p>
 <h4>Two engineering fixes</h4>
 <ul><li><b>Laplace smoothing</b>: without the +1, P(cash | ham) = 0 and any ham email containing "cash" gets a score of exactly 0.</li>
 <li><b>Logs</b>: a long email multiplies hundreds of small numbers, which underflows to 0.0. Add log-probabilities instead; the winner is the same.</li></ul>
@@ -919,7 +950,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 model = make_pipeline(CountVectorizer(), MultinomialNB(alpha=1.0))
 model.fit(texts, labels)
-model.predict_proba(["free cash prize"])</code></pre>`},
+model.predict_proba(["free cash prize"])</code></pre>
+<p>Comparing with your hand-built version: scikit-learn's vectorizer <b>ignores words it never saw in training</b>, while the hand-built filter gives unseen words a smoothed probability. Both are valid; that's why the two can differ slightly on new words.</p>`},
 
   {id:"l3-ml", day:3, title:"8. Where probability shows up in machine learning",
    body:R`<ul><li><b>Classifier outputs</b> are probabilities: <code>predict_proba</code>. The label is just "probability above a threshold" (0.5 by default). Moving the threshold trades precision for recall.</li>
@@ -1236,6 +1268,208 @@ INTERVIEW.push(
    say:R`Accuracy would become misleading, since predicting "ham" always would score 99%. I'd focus on precision, recall and PR-AUC, use class weights or resampling during training, and choose the decision threshold based on the business cost of false alarms versus missed spam.`,
    a:R`<p>Same base-rate logic as Bayes on Day 3: with rare positives, even a small false-positive rate creates many false alarms. Options: <code>LogisticRegression(class_weight="balanced")</code>, threshold tuning on a validation set, and stratified cross-validation so every fold contains positives.</p>`},
 );
+
+// ---------- Additions found in the completeness check (each slots in after the item named in "after") ----------
+const EXTRA_FORMULAS = [
+  {after:"f2-corr", id:"f2-skew", day:2, name:"Skewness",
+   tex:R`g = \frac{1}{n}\sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^{3}`,
+   symbols:[[R`g`,"0 = symmetric, positive = long right tail, negative = long left tail"],[R`(\cdot)^3`,"cubing keeps the sign, so big gaps on one side dominate"]],
+   example:R`Titanic fare: <code>df.fare.skew()</code> = <b>4.79</b>, heavily right-skewed (a few fares of 512 vs a median of 14). Rule of thumb: |g| above 1 is strongly skewed.<br>pandas uses a small-sample adjusted version, so its number differs slightly from this textbook form.`,
+   use:"Deciding whether to log-transform a feature, and whether to report the median instead of the mean."},
+  {after:"f2-skew", id:"f2-chi2", day:2, name:"Chi-square test of independence",
+   tex:R`\chi^2 = \sum_{\text{cells}} \frac{(O - E)^2}{E}, \qquad E = \frac{\text{row total} \times \text{column total}}{\text{grand total}}`,
+   symbols:[[R`O`,"observed count in a cell of the crosstab"],[R`E`,"expected count if the two variables were independent"],[R`\text{dof}`,"(rows − 1) × (columns − 1)"]],
+   example:R`Titanic sex × survived: 233 women survived, but independence predicts 314 × 342 / 891 = <b>120.5</b>. Summing over all 4 cells gives χ² = <b>260.7</b> (with Yates' correction, dof = 1), p = 1.2 × 10⁻⁵⁸ → sex and survival are clearly linked.<pre><code>stats.chi2_contingency(pd.crosstab(df.sex, df.survived))</code></pre>`,
+   use:"Two CATEGORICAL variables: is there a relationship, or could the pattern be chance?"},
+  {after:"f2-chi2", id:"f2-welch", day:2, name:"Welch's t-test (two means)",
+   tex:R`t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}}}`,
+   symbols:[[R`\bar{x}_1,\ \bar{x}_2`,"the two group means"],[R`s_1,\ s_2`,"the two group standard deviations"],[R`n_1,\ n_2`,"the two group sizes"]],
+   example:R`Fare: survivors 48.4 (s = 66.6, n = 342) vs non-survivors 22.1 (s = 31.4, n = 549) → t = 26.3 / 3.84 = <b>6.84</b>, p = 2.7 × 10⁻¹¹.<pre><code>stats.ttest_ind(a, b, equal_var=False)   # Welch: no equal-variance assumption</code></pre>`,
+   use:"A NUMERIC variable compared across two groups. Welch's version is the safe default when the groups have different spreads."},
+  {after:"f2-missing", id:"f2-family", day:2, name:"Engineered feature: family size",
+   tex:R`\text{family\_size} = \text{sibsp} + \text{parch} + 1, \qquad \text{is\_alone} = [\text{family\_size} = 1]`,
+   symbols:[[R`\text{sibsp}`,"siblings and spouses aboard"],[R`\text{parch}`,"parents and children aboard"],[R`+1`,"the passenger themself"]],
+   example:R`Survival: alone (537 people) <b>30%</b>; families of 2–4: <b>55–72%</b>; families of 5+: 0–33%. A non-linear pattern, which is why a single correlation number misses it.`,
+   use:"Combining raw columns into something closer to the real-world cause. Most model improvement comes from features like this."},
+  {after:"f2-family", id:"f2-optimize", day:2, name:"Training = minimising a loss",
+   tex:R`w^{*} = \arg\min_{w}\ L(w)`,
+   symbols:[[R`L(w)`,"loss: how wrong the model is with parameters w"],[R`w^{*}`,"the best parameters"],[R`\arg\min`,"the input that gives the smallest output"]],
+   example:R`L(w) = (w − 3)² + 1 has its minimum at w = 3:<pre><code>optimize.minimize(lambda w: (w - 3)**2 + 1, x0=0.0).x   # [3.0]</code></pre>Logistic regression, neural networks and gradient descent (Day 6) all do this, with millions of parameters.`,
+   use:"Understanding what \"fit\" means in every ML library: search for the parameters with the lowest error."},
+  {after:"f3-classical", id:"f3-axioms", day:3, name:"The three axioms of probability",
+   tex:R`0 \le P(A) \le 1, \qquad P(S) = 1, \qquad P(A \cup B) = P(A) + P(B)\ \text{ if } A \cap B = \varnothing`,
+   symbols:[[R`S`,"sample space: every possible outcome"],[R`\varnothing`,"empty set: A and B can't happen together"]],
+   example:R`One die: each face 1/6, all six add to 1, and P(1 or 2) = 1/6 + 1/6 = <b>1/3</b> because they can't both happen.`,
+   use:"Sanity-checking any model output: class probabilities must be between 0 and 1 and sum to 1 (what softmax guarantees)."},
+  {after:"f3-poisson", id:"f3-geom", day:3, name:"Geometric distribution (waiting for the first success)",
+   tex:R`P(X{=}k) = (1-p)^{k-1}\,p, \qquad E[X] = \frac{1}{p}`,
+   symbols:[[R`k`,"the trial on which the first success happens (1, 2, 3, …)"],[R`p`,"success probability on each trial"]],
+   example:R`Rolling for a six: P(first six on roll 3) = (5/6)² × 1/6 = <b>0.116</b>. Expected rolls = 1/(1/6) = <b>6</b>.`,
+   use:"\"How long until…\" questions: retries until a request succeeds, calls until a sale."},
+  {after:"f3-geom", id:"f3-uniform", day:3, name:"Uniform distribution",
+   tex:R`f(x) = \frac{1}{b-a}\ \ (a \le x \le b), \qquad E[X] = \frac{a+b}{2}, \qquad \operatorname{Var}(X) = \frac{(b-a)^2}{12}`,
+   symbols:[[R`a,\ b`,"the lowest and highest possible values"]],
+   example:R`A bus comes every 10 minutes and you arrive at a random time: wait ~ Uniform(0, 10). Mean wait <b>5 min</b>; P(wait ≤ 3) = 3/10 = <b>0.3</b>.<pre><code>rng.uniform(0, 10, size=5)</code></pre>`,
+   use:"Every value in a range is equally likely: random number generators, random search over hyperparameters."},
+  {after:"f3-cdf", id:"f3-lln", day:3, name:"Law of large numbers",
+   tex:R`\bar{x}_n = \frac{1}{n}\sum_{i=1}^{n} x_i \ \longrightarrow\ \mu \quad \text{as } n \to \infty`,
+   symbols:[[R`\bar{x}_n`,"average of the first n results"],[R`\mu`,"the true expected value"]],
+   example:R`Coin flips: after 10 flips the share of heads might be 0.7; after 100,000 it's very close to <b>0.5</b>. That's why a simulation can check any probability formula.`,
+   use:"Trusting estimates from data: more samples → estimates closer to the truth (the error shrinks roughly like 1/√n)."},
+  {after:"f3-logs", id:"f3-llr", day:3, name:"How much one word pushes (log-likelihood ratio)",
+   tex:R`\text{push}(w) = \log\frac{P(w \mid \text{spam})}{P(w \mid \text{ham})} \qquad \log\frac{P(\text{spam}\mid \text{email})}{P(\text{ham}\mid \text{email})} = \log\frac{P(\text{spam})}{P(\text{ham})} + \sum_{w} \text{push}(w)`,
+   symbols:[[R`\text{push}(w) > 0`,"the word points toward spam"],[R`\text{push}(w) < 0`,"the word points toward ham"]],
+   example:R`Toy filter: free ln(3/2) = <b>+0.41</b>, cash ln 2 = <b>+0.69</b>, prize <b>+0.69</b>, meeting ln(1/2) = <b>−0.69</b>. "free cash prize" totals +1.79 → odds e^1.79 = 6 : 1 → P(spam) = 6/7 = <b>0.857</b>.<br>A total of exactly 0 is a tie: both classes equally likely.`,
+   use:"Explaining a Naive Bayes decision word by word. It's the same idea as TextPulse's word contributions."},
+];
+
+const EXTRA_LESSONS = [
+  {after:"l1-types", id:"l1-strings", day:1, title:"0. Strings and control flow",
+   body:R`<h4>Strings</h4>
+<pre><code>s = "  ravi kumar  "
+s.strip().title()          # 'Ravi Kumar'   (clean names before de-duplicating)
+s.split()                  # ['ravi', 'kumar']
+", ".join(["a", "b"])      # 'a, b'         (join is a method of the separator)
+"model"[0], "model"[-1]    # 'm', 'l'       (negative index counts from the end)
+"model"[1:3]               # 'od'           slicing: start included, end excluded
+"model"[::-1]              # 'ledom'        step -1 reverses
+"ml" in "html"             # True
+f"{name:&lt;10}|{avg:6.2f}|{pct:.1%}"   # padding, 2 decimals, percentage</code></pre>
+<p>Strings are <b>immutable</b>: every method returns a new string. Building a big string with <code>+=</code> in a loop copies it each time; collect the pieces in a list and <code>"".join(parts)</code> once.</p>
+<h4>if / elif / else, while, and the one-line if</h4>
+<pre><code>if score &gt;= 90:
+    grade = "A"
+elif score &gt;= 75:
+    grade = "B"
+else:
+    grade = "C"
+
+label = "PASS" if score &gt;= 70 else "FAIL"   # C#: score &gt;= 70 ? "PASS" : "FAIL"
+
+n = 0
+while n &lt; 3:
+    n += 1            # there is no n++ in Python</code></pre>
+<p><code>break</code> leaves the loop; <code>continue</code> skips to the next item. Comparisons can chain: <code>0 &lt;= mark &lt;= 100</code>.</p>`},
+  {after:"l1-funcs", id:"l1-modules", day:1, title:"0. map, filter, sorted, and the standard library",
+   body:R`<pre><code>students = [("Asha", 91), ("Ravi", 67), ("Meena", 84)]
+sorted(students, key=lambda s: s[1], reverse=True)     # by marks, highest first
+list(map(lambda s: s[0].upper(), students))            # ['ASHA', 'RAVI', 'MEENA']
+list(filter(lambda s: s[1] &gt;= 80, students))           # [('Asha', 91), ('Meena', 84)]
+[name for name, m in students if m &gt;= 80]              # same thing, more readable</code></pre>
+<p><code>map</code> and <code>filter</code> return lazy iterators (wrap them in <code>list()</code> to see the values). Python style prefers comprehensions. <code>sorted()</code> returns a new list; <code>list.sort()</code> sorts in place and returns None.</p>
+<h4>Modules and imports</h4>
+<p>A <b>module</b> is any .py file; a <b>package</b> is a folder of modules (TextPulse's <code>src/</code>). Import styles:</p>
+<pre><code>import math                         # math.sqrt(16)
+import statistics as st             # st.mean, st.median, st.mode, st.stdev
+from collections import Counter, defaultdict
+from src.config import MODELS_DIR   # your own package</code></pre>
+<p>Standard-library modules worth knowing: <code>math</code>, <code>statistics</code>, <code>collections</code> (Counter, defaultdict, deque), <code>itertools</code>, <code>random</code>, <code>datetime</code>, <code>pathlib</code>, <code>json</code>, <code>csv</code>, <code>re</code> (regular expressions), <code>time</code>.</p>
+<h4>if __name__ == "__main__":</h4>
+<pre><code>def main():
+    train_models()
+
+if __name__ == "__main__":   # True only when this file is run directly
+    main()</code></pre>
+<p>When the file is imported by another file, <code>__name__</code> is the module's name, so <code>main()</code> doesn't run. That lets one file be both a reusable module and a script (TextPulse's <code>python -m src.train</code> works this way).</p>`},
+  {after:"l1-errors", id:"l1-demo", day:1, title:"0. Live demo walkthrough: the Student Marks Analyzer",
+   body:R`<p>The Day 1 demo used only core Python to turn messy marks into a report. The steps are the same ones you'll later do with pandas on millions of rows:</p>
+<ol><li><b>Read</b> the rows (CSV text → list of dicts).</li>
+<li><b>De-duplicate by roll number</b> with a <code>set</code> of seen rolls (not by name: "ravi" and "Ravi" are the same student). Keep a report of what was dropped.</li>
+<li><b>Normalise text</b>: <code>name.strip().title()</code>.</li>
+<li><b>Validate</b>: a mark outside 0–100 (Arjun's 105) is impossible → treat it as missing.</li>
+<li><b>Impute</b>: replace missing marks with the subject mean, computed from <b>valid values only</b>.</li>
+<li><b>Model each student</b> as a <code>Student</code> class with an <code>average</code> property and a <code>grade</code>.</li>
+<li><b>Summarise</b>: class average per subject, topper per subject (<code>max(students, key=...)</code>), grade distribution (<code>Counter</code>).</li>
+<li><b>Report</b> with aligned f-strings, rounding only for display.</li></ol>
+<div class="tip">This is the skeleton of every data project: load → clean → validate → impute → compute → report. On Day 2 the same steps took about 6 lines of pandas.</div>`},
+  {after:"l2-viz", id:"l2-mpl", day:2, title:"0. Matplotlib: figures, axes and subplots",
+   body:R`<p>Matplotlib draws on a <b>Figure</b> (the whole image) that contains one or more <b>Axes</b> (individual plots, each with its own x and y axis). Seaborn draws onto Matplotlib axes, so the two work together.</p>
+<pre><code>fig, axes = plt.subplots(1, 3, figsize=(14, 3.5))     # 1 row, 3 plots
+
+axes[0].hist(marks, bins=25)
+axes[0].set(title="Distribution of marks", xlabel="mark", ylabel="count")
+
+axes[1].scatter(x, y, alpha=0.7)
+axes[1].plot(x, 2 * x, color="red", label="y = 2x"); axes[1].legend()
+
+sns.barplot(data=df, x="sex", y="survived", ax=axes[2])   # seaborn on a chosen axis
+plt.tight_layout(); plt.show()
+fig.savefig("eda.png", dpi=150)</code></pre>
+<ul><li>Use the <b>object style</b> (<code>fig, ax = plt.subplots()</code> then <code>ax.set_title</code>) rather than <code>plt.title</code> once there's more than one plot.</li>
+<li><code>sns.heatmap(pivot, annot=True, fmt=".0%")</code> turns a pivot table into a labelled grid: great for sex × class survival.</li>
+<li><code>sns.kdeplot(..., hue="alive", common_norm=False)</code> compares the shapes of two groups fairly even when their sizes differ.</li></ul>`},
+  {after:"l2-stats", id:"l2-scipy", day:2, title:"0. SciPy: the scientific toolbox (stats and optimize)",
+   body:R`<p>SciPy holds ready-made scientific algorithms on top of NumPy: <code>scipy.stats</code> (distributions and tests), <code>scipy.optimize</code> (finding minimums), <code>scipy.linalg</code> (linear algebra) and <code>scipy.sparse</code> (matrices that are mostly zeros, like TF-IDF).</p>
+<pre><code>from scipy import stats, optimize
+stats.norm.cdf(85, loc=70, scale=10)     # P(mark &lt; 85) if marks ~ N(70, 10) = 0.933
+
+loss = lambda w: (w - 3) ** 2 + 1
+optimize.minimize(loss, x0=0.0).x        # [3.0]: the w with the smallest loss</code></pre>
+<p><b>Why optimize matters</b>: every ML model is trained by minimising a loss. Logistic regression, neural networks and gradient descent (Day 6) are all fancier versions of this one call.</p>
+<h4>Which test for which data?</h4>
+<table><tr><th>Variables</th><th>Test</th><th>Titanic result</th></tr>
+<tr><td>categorical vs categorical</td><td>chi-square: <code>stats.chi2_contingency</code></td><td>sex vs survived: χ² = 260.7, p ≈ 10⁻⁵⁸</td></tr>
+<tr><td>numeric vs 2 groups</td><td>Welch t-test: <code>stats.ttest_ind(a, b, equal_var=False)</code></td><td>fare: 48.4 vs 22.1, t = 6.84, p ≈ 10⁻¹¹</td></tr>
+<tr><td>numeric vs numeric</td><td>correlation: <code>stats.pearsonr</code>, <code>stats.spearmanr</code></td><td>-</td></tr>
+<tr><td>numeric vs 3+ groups</td><td>ANOVA: <code>stats.f_oneway</code> (Day 4)</td><td>-</td></tr></table>`},
+];
+
+const EXTRA_INTERVIEW = [
+  {after:"i1-self", id:"i1-name", day:1, level:"basic", q:"What does if __name__ == \"__main__\" do?",
+   say:R`It runs the code below it only when the file is executed directly, not when it's imported. That lets one file work as both a reusable module and a script.`,
+   a:R`<p>Python sets <code>__name__</code> to <code>"__main__"</code> for the file you run, and to the module's name for imported files. Without the guard, importing your training module would start a training run. Also mention: a <b>module</b> is a .py file, a <b>package</b> is a folder of modules, and <code>python -m package.module</code> runs a module inside a package.</p>`},
+  {after:"i1-comp", id:"i1-mapfilter", day:1, level:"mid", q:"map/filter vs list comprehensions: which do you prefer?",
+   say:R`Both transform and filter collections. I prefer comprehensions for readability; map can be fine with an existing named function, like map(str.strip, lines). Both map and filter return lazy iterators in Python 3.`,
+   a:R`<pre><code>list(map(str.upper, names))          # fine: a named function
+[n.upper() for n in names]           # same result, more Pythonic
+[x for x in nums if x % 2 == 0]      # clearer than list(filter(lambda x: x % 2 == 0, nums))</code></pre>
+<p>For numeric data, neither: use NumPy or pandas vectorised operations.</p>`},
+  {after:"i1-mapfilter", id:"i1-iter", day:1, level:"mid", q:"Iterable vs iterator?",
+   say:R`An iterable is anything you can loop over (list, dict, string, file); calling iter() on it gives an iterator, which produces values one at a time with next() and is used up once it's finished. Generators are a simple way to write iterators.`,
+   a:R`<pre><code>it = iter([1, 2, 3])
+next(it), next(it), next(it)   # 1, 2, 3
+next(it)                       # StopIteration: a for-loop catches this for you</code></pre>
+<p>That's why a generator or <code>map</code> object can only be looped over once, while a list can be looped many times.</p>`},
+  {after:"i1-gil", id:"i1-memory", day:1, level:"adv", q:"How does Python manage memory?",
+   say:R`Mostly by reference counting: each object counts how many names point to it, and it's freed when the count reaches zero. A cycle-detecting garbage collector cleans up objects that only reference each other.`,
+   a:R`<ul><li><code>del x</code> removes a name, not necessarily the object; the object goes when no references remain.</li>
+<li>Reference cycles (a ↔ b) are handled by the <code>gc</code> module.</li>
+<li>In ML, the real memory issue is usually big arrays: free them with <code>del df</code>, use smaller dtypes, process in chunks, and watch for hidden copies (pandas operations often return copies).</li></ul>`},
+  {after:"i2-merge", id:"i2-figax", day:2, level:"basic", q:"In Matplotlib, what's the difference between a Figure and an Axes?",
+   say:R`The Figure is the whole image or window; an Axes is one plot inside it, with its own x and y axes. plt.subplots returns both, and I draw on each Axes object.`,
+   a:R`<pre><code>fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+axes[0, 1].hist(df.age)
+axes[0, 1].set(title="Age", xlabel="years")
+sns.boxplot(data=df, x="pclass", y="age", ax=axes[1, 0])</code></pre>
+<p>Seaborn functions accept <code>ax=</code>, so you can place seaborn charts in any grid position.</p>`},
+  {after:"i2-outlier", id:"i2-tests", day:2, level:"mid", q:"Which statistical test would you use to check if a feature is related to the target?",
+   say:R`It depends on the data types. Two categorical variables: chi-square test. A numeric feature against a binary target: a t-test (Welch's) or Mann–Whitney if it's very skewed. Two numeric variables: Pearson or Spearman correlation.`,
+   a:R`<p>Titanic: sex vs survival χ² = 260.7 (p ≈ 10⁻⁵⁸); fare for survivors vs non-survivors, Welch t = 6.84 (p ≈ 10⁻¹¹). Caveats: significance isn't the same as importance, with big data almost everything is "significant", and tests check one feature at a time, missing interactions like sex × class.</p>`},
+  {after:"i2-tests", id:"i2-optimize", day:2, level:"adv", q:"What does it actually mean to \"train\" or \"fit\" a model?",
+   say:R`Fitting means searching for the parameter values that minimise a loss function on the training data, using an optimiser. For example, logistic regression minimises log loss plus a regularisation term.`,
+   a:R`<p>The simplest version is <code>scipy.optimize.minimize(lambda w: (w - 3)**2 + 1, x0=0)</code>, which finds w = 3. Real models do the same with thousands or millions of parameters, usually using gradients (Day 6: gradient descent). The parts to name: the model (a function with parameters), the loss (how wrong it is), the optimiser (how parameters are updated), and regularisation (a penalty that prevents overfitting).</p>`},
+  {after:"i3-indep", id:"i3-rv", day:3, level:"basic", q:"What is a random variable? What's the expected value of a fair die roll?",
+   say:R`A random variable is a number whose value depends on chance, like a die roll or tomorrow's number of orders. The expected value is the probability-weighted average: for a die, (1 + 2 + … + 6)/6 = 3.5.`,
+   a:R`<p>Random variables can be discrete (counts, with a PMF) or continuous (measurements, with a PDF). Expected value is the long-run average, not necessarily a value you can get, since you can never roll 3.5. Variance for a die is 35/12 ≈ 2.92.</p>`},
+  {after:"i3-rv", id:"i3-axioms", day:3, level:"basic", q:"What are the axioms of probability?",
+   say:R`Three rules: every probability is between 0 and 1, the probability of the whole sample space is 1, and for events that can't happen together, the probability of either is the sum of their probabilities. Everything else, like the complement rule, follows from these.`,
+   a:R`<p>Example of deriving a rule: A and "not A" can't happen together and together cover everything, so P(A) + P(not A) = 1, which gives the complement rule. In ML, a classifier's predicted probabilities must obey these: softmax outputs are between 0 and 1 and sum to 1.</p>`},
+  {after:"i3-log", id:"i3-lln", day:3, level:"mid", q:"Law of Large Numbers vs Central Limit Theorem?",
+   say:R`The Law of Large Numbers says the sample average gets closer to the true mean as the sample grows. The Central Limit Theorem says the distribution of that sample average becomes approximately normal, whatever the original distribution, with spread σ/√n.`,
+   a:R`<p>LLN is why estimates from more data are more reliable, and why simulation works. CLT is why we can build confidence intervals and run t-tests on averages of non-normal data (Day 4 covers it with a simulation). Common confusion: CLT does NOT say the data itself becomes normal, only the averages.</p>`},
+  {after:"i3-laplace", id:"i3-explain", day:3, level:"mid", q:"How do you explain a single Naive Bayes prediction?",
+   say:R`Work in log odds. Each word adds log(P(word | spam) / P(word | ham)) to the score: positive pushes toward spam, negative toward ham. Listing the biggest pushes shows exactly why the email was classified that way.`,
+   a:R`<p>Toy example: "free cash prize" → free +0.41, cash +0.69, prize +0.69, total +1.79 → odds 6:1 → 85.7% spam. A total of exactly zero is a tie. Implementation detail: scikit-learn's vectorizer simply ignores words it never saw in training, while a hand-built filter may give them a smoothed probability, so the two can differ slightly on unseen words.</p>`},
+];
+
+// Insert the additions after their anchors, then renumber lesson titles per day.
+function insertAfter(list, extras){
+  extras.forEach(x => { const i = list.findIndex(item => item.id === x.after); list.splice(i < 0 ? list.length : i + 1, 0, x); });
+}
+insertAfter(FORMULAS, EXTRA_FORMULAS);
+insertAfter(LESSONS, EXTRA_LESSONS);
+insertAfter(INTERVIEW, EXTRA_INTERVIEW);
+(() => { const n = {}; LESSONS.forEach(l => { n[l.day] = (n[l.day] || 0) + 1; l.title = l.title.replace(/^\d+\.\s*/, n[l.day] + ". "); }); })();
 
 
 // ---------- state (per-viewer conveniences only) ----------
