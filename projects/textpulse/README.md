@@ -53,7 +53,7 @@ flowchart LR
 4. **Stream:** the server picks unseen test messages, classifies them one at a time, and pushes each result to every open dashboard.
 5. **Explain:** both algorithms are linear, so each word's contribution (TF-IDF value × word weight) explains the prediction exactly.
 
-New to the code? [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) walks through every file in plain language.
+New to the code? [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) gives a quick tour, and the full [code walkthrough](docs/CODE_WALKTHROUGH.md) ([PDF](docs/TextPulse-Code-Walkthrough.pdf)) explains every file line by line, using real values from the trained models.
 
 ## Quick start
 
