@@ -1,13 +1,23 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ML Sticky Notes</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
-/* Layout: a revision board of masonry sticky notes, filtered by day and note type */
+/* Layout: four views (sticky board, formula sheet, long-form notes, interview Q&A) sharing one day filter and search */
 :root{
   --board:#e9ecef; --board-ink:#1d232b; --muted:#5b6672; --line:#cfd5db; --chip:#ffffff; --chip-on:#1d232b; --chip-on-ink:#ffffff;
+  --card:#ffffff; --card-soft:#f4f6f8; --accent:#2f6fb0;
   --n-concept:#cfe6ff; --n-pitfall:#ffd0d4; --n-code:#fff1a8; --n-rule:#d4f2cc;
+  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --dP:#c2456b;
+  --lv-basic:#d4f2cc; --lv-mid:#fff1a8; --lv-adv:#ffd0d4;
   --n-ink:#1f2328; --n-soft:#4a525c; --code-bg:rgba(0,0,0,.07); --shadow:0 1px 2px rgba(20,30,40,.12),0 6px 14px rgba(20,30,40,.10);
   --f-note:"Kalam","Segoe Print","Comic Sans MS",cursive;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -15,31 +25,47 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
+  --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --dP:#e07a9a;
+  --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
+  --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --dP:#e07a9a;
+  --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}
 
-body{background:var(--board);color:var(--board-ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body{background:var(--board);color:var(--board-ink);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
 h1{font-family:var(--f-note);font-weight:700;font-size:clamp(30px,5vw,42px);line-height:1.05;margin:0;text-wrap:balance}
-.sub{color:var(--muted);margin:6px 0 0;max-width:60ch}
+.sub{color:var(--muted);margin:6px 0 0;max-width:62ch}
 .progress{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .progress b{color:var(--board-ink);font-weight:500}
 
-.controls{display:flex;flex-direction:column;gap:10px;padding-block:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:24px}
+/* View tabs */
+.views{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.view{font:600 14px var(--f-body);background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:10px 14px 9px;cursor:pointer;margin-bottom:-1px}
+.view[aria-selected="true"]{color:var(--board-ink);border-bottom-color:var(--board-ink)}
+.view:focus-visible{outline:2px solid #2f81c7;outline-offset:-2px}
+.view .count{font:500 12px var(--f-mono);color:var(--muted);margin-left:6px}
+
+.controls{display:flex;flex-direction:column;gap:10px;padding-block:4px 14px;border-bottom:1px solid var(--line);margin-bottom:24px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .row-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);width:44px;flex:none}
-.chip{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--chip);color:var(--board-ink);padding:5px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip,.btn{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--chip);color:var(--board-ink);padding:5px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
-.chip:focus-visible,.got:focus-visible,#q:focus-visible{outline:2px solid #2f81c7;outline-offset:2px}
+.btn{border-radius:8px}
+.chip:focus-visible,.btn:focus-visible,.got:focus-visible,#q:focus-visible,summary:focus-visible{outline:2px solid #2f81c7;outline-offset:2px}
 .dot{width:10px;height:10px;border-radius:2px;border:1px solid rgba(0,0,0,.15)}
 #q{font:14px var(--f-body);padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--board-ink);flex:1 1 220px;min-width:0;max-width:340px}
-.hide-done{font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.toggle{font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+[hidden]{display:none!important}
 
+/* Sticky board */
 .board{columns:250px;column-gap:22px}
 .note{break-inside:avoid;margin:0 0 22px;padding:14px 16px 12px;color:var(--n-ink);box-shadow:var(--shadow);border-radius:2px 2px 14px 2px;position:relative;transform:rotate(var(--tilt,0deg));transition:transform .15s ease,opacity .15s ease}
 .note:hover{transform:rotate(0deg) translateY(-2px)}
@@ -49,44 +75,115 @@ h1{font-family:var(--f-note);font-weight:700;font-size:clamp(30px,5vw,42px);line
 .note h3{font-family:var(--f-note);font-weight:700;font-size:21px;line-height:1.15;margin:6px 0 6px;text-wrap:balance}
 .note p{margin:0 0 8px;font-size:14px}
 .note pre{margin:6px 0 8px;padding:8px 10px;background:var(--code-bg);border-radius:4px;overflow-x:auto;font:13px/1.45 var(--f-mono);white-space:pre}
-.note code{font-family:var(--f-mono);font-size:12.5px;background:var(--code-bg);padding:0 4px;border-radius:3px}
-.note pre code{background:none;padding:0}
 .note table{border-collapse:collapse;font-size:12.5px;width:100%;margin:4px 0 8px}
 .note td{padding:3px 4px;border-top:1px solid rgba(127,127,127,.25);vertical-align:top}
 .note td:first-child{white-space:nowrap;padding-right:8px}
 .got{font:500 12px var(--f-body);background:transparent;border:1px solid rgba(127,127,127,.45);color:var(--n-ink);border-radius:999px;padding:2px 10px;cursor:pointer}
 .note.done .got{background:var(--n-ink);color:var(--board);border-color:var(--n-ink)}
 .empty{color:var(--muted);padding:40px 0;text-align:center}
-@media (prefers-reduced-motion: reduce){.note{transform:none;transition:none}.note:hover{transform:none}}
+
+/* Shared rich-text styles for formulas, lessons and answers */
+code{font-family:var(--f-mono);font-size:12.5px;background:var(--code-bg);padding:0 4px;border-radius:3px}
+pre code{background:none;padding:0}
+.rich pre{margin:8px 0 12px;padding:10px 12px;background:var(--code-bg);border-radius:6px;overflow-x:auto;font:13px/1.5 var(--f-mono);white-space:pre}
+.rich p{margin:0 0 10px} .rich ul,.rich ol{margin:0 0 10px;padding-left:22px} .rich li{margin:3px 0}
+.rich h4{font-size:15px;margin:16px 0 6px}
+.rich table{border-collapse:collapse;font-size:13.5px;margin:6px 0 12px;display:block;overflow-x:auto;max-width:100%}
+.rich th,.rich td{padding:5px 10px;border:1px solid var(--line);text-align:left;vertical-align:top}
+.rich th{background:var(--card-soft);font-weight:600}
+.rich .tip{background:var(--card-soft);border-left:3px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0}
+.rich .warn{background:var(--card-soft);border-left:3px solid var(--dP);padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0}
+.katex-display{margin:8px 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+
+.day-head{display:flex;align-items:baseline;gap:10px;margin:30px 0 12px;font-size:20px}
+.day-head:first-child{margin-top:0}
+.day-head .bar{width:6px;height:20px;border-radius:3px;align-self:center}
+.day-head h2{margin:0;font-size:20px}
+.day-head span{color:var(--muted);font-size:13px}
+
+/* Formula sheet */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px}
+.fcard{background:var(--card);border-radius:10px;border-top:4px solid var(--dc);box-shadow:var(--shadow);padding:14px 16px;min-width:0}
+.fcard h3{margin:2px 0 4px;font-size:16px}
+.fcard .tex{font-size:17px;background:var(--card-soft);border-radius:8px;padding:6px 10px;margin:8px 0}
+.fcard .tex-fallback{font:14px var(--f-mono);white-space:pre-wrap}
+.fcard .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 3px}
+.fcard .sym{width:100%;border-collapse:collapse;font-size:13.5px}
+.fcard .sym td{padding:3px 6px 3px 0;border-top:1px solid var(--line);vertical-align:top}
+.fcard .sym td:first-child{white-space:nowrap;width:1%;padding-right:12px}
+.fcard .ex{font-size:14px}
+
+/* Lessons and Q&A as expandable cards */
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:-10px 0 16px}
+details.card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);margin:0 0 12px;border-left:4px solid var(--dc)}
+details.card>summary{cursor:pointer;padding:13px 16px;list-style:none;display:flex;gap:10px;align-items:baseline;font-weight:600}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::before{content:"▸";color:var(--muted);flex:none;transition:transform .15s}
+details.card[open]>summary::before{transform:rotate(90deg)}
+details.card>summary .q{flex:1;min-width:0}
+details.card .body{padding:0 18px 14px 34px;max-width:82ch}
+.lvl{font:500 11px var(--f-body);letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;color:var(--n-ink);flex:none}
+.lvl.basic{background:var(--lv-basic)} .lvl.mid{background:var(--lv-mid)} .lvl.adv{background:var(--lv-adv)}
+.ready{flex:none;font-size:12px;color:var(--muted)}
+.qa.is-ready{opacity:.6}
+.say{background:var(--card-soft);border-radius:8px;padding:10px 12px;margin:0 0 12px}
+.say b:first-child{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.qa-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:var(--shadow)}}
+@media (prefers-reduced-motion: reduce){.note{transform:none;transition:none}.note:hover{transform:none}.flash{animation:none}}
+@media (max-width:560px){details.card .body{padding-left:16px} .view{padding:10px 9px 9px}}
 </style>
 
 <div class="wrap">
   <header>
     <div>
       <h1>ML Sticky Notes</h1>
-      <p class="sub">The points worth remembering from each day of the 30-day plan. Tick a note when you can explain it without looking.</p>
+      <p class="sub" id="sub"></p>
     </div>
     <div class="progress" id="progress"></div>
   </header>
 
+  <nav class="views" role="tablist" aria-label="Sections">
+    <button class="view" role="tab" data-view="sticky">Sticky notes<span class="count" id="c-sticky"></span></button>
+    <button class="view" role="tab" data-view="formulas">Formulas<span class="count" id="c-formulas"></span></button>
+    <button class="view" role="tab" data-view="lessons">Detailed notes<span class="count" id="c-lessons"></span></button>
+    <button class="view" role="tab" data-view="interview">Interview prep<span class="count" id="c-interview"></span></button>
+  </nav>
+
   <div class="controls">
     <div class="row"><span class="row-label">Day</span><div class="row" id="dayChips"></div></div>
-    <div class="row"><span class="row-label">Type</span><div class="row" id="typeChips"></div></div>
+    <div class="row" data-for="sticky"><span class="row-label">Type</span><div class="row" id="typeChips"></div></div>
+    <div class="row" data-for="interview"><span class="row-label">Level</span><div class="row" id="levelChips"></div></div>
     <div class="row">
       <span class="row-label">Find</span>
-      <input id="q" type="search" placeholder="Search notes, e.g. axis, leakage, kwargs" aria-label="Search notes">
-      <label class="hide-done"><input type="checkbox" id="hideDone"> Hide notes I've got</label>
+      <input id="q" type="search" placeholder="Search, e.g. Bayes, axis, TF-IDF" aria-label="Search">
+      <label class="toggle" data-for="sticky"><input type="checkbox" id="hideDone"> Hide notes I've got</label>
+      <label class="toggle" data-for="interview"><input type="checkbox" id="hideReady"> Hide questions I'm ready for</label>
     </div>
   </div>
 
-  <div class="board" id="board"></div>
+  <div class="tools" data-for="lessons interview">
+    <button class="btn" type="button" id="expandAll">Expand all</button>
+    <button class="btn" type="button" id="collapseAll">Collapse all</button>
+    <button class="btn" type="button" id="randomQ" data-for="interview">Random question</button>
+  </div>
+
+  <main id="out"></main>
 </div>
 
 <script>
-const TYPES = {
-  concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}
+const R = String.raw;
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", P:"Project · TextPulse"};
+const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", P:"TextPulse: real-time spam & sentiment"};
+const TYPES = {concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}};
+const LEVELS = {basic:"Basic", mid:"Intermediate", adv:"Advanced"};
+const SUBS = {
+  sticky:"The points worth remembering from each day. Tick a note when you can explain it without looking.",
+  formulas:"Every important formula: what each symbol means, a worked example with real numbers, and when to use it.",
+  lessons:"The full explanation of each topic, written for a beginner, with examples and code.",
+  interview:"Questions interviewers actually ask, with a short answer to say out loud and the full explanation behind it.",
 };
-const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability"};
 
 const NOTES = [
   // ---------- Day 1 ----------
@@ -200,61 +297,1103 @@ c = a.copy()         # independent copy</code></pre>`},
    body:`<p>(count + 1) / (total + vocab size)</p><p>Stops one unseen word from making the whole product 0.</p>`},
   {id:"d3-logs", day:3, type:"pitfall", title:"Multiply probabilities → add logs",
    body:`<p>(10⁻⁵)¹⁰⁰ underflows to 0.0. Summing the logs gives −1151, which is fine. Always work in log space for long products.</p>`},
+  // ---------- Project: TextPulse ----------
+  {id:"p-pipeline", day:"P", type:"concept", title:"TextPulse in one line",
+   body:`<p>clean text → TF-IDF (1–2 word terms) → Logistic Regression → probability + top words → WebSocket → live dashboard.</p>`},
+  {id:"p-scores", day:"P", type:"rule", title:"Numbers to quote",
+   body:`<table><tr><td>Spam</td><td>97.95% acc · 98.1% precision · 97.1% recall</td></tr><tr><td>Sentiment</td><td>82.30% on 320,000 tweets</td></tr><tr><td>Scale</td><td>1.64M records · ~38,500/s</td></tr></table>`},
+  {id:"p-linear", day:"P", type:"concept", title:"Linear = explainable",
+   body:`<p>score = Σ (TF-IDF value × weight) + bias, then sigmoid → probability. Each word's value × weight is its exact contribution.</p>`},
+  {id:"p-leak", day:"P", type:"pitfall", title:"Fit on training data only",
+   body:`<p>The TF-IDF vocabulary and IDF come from the training split. Fitting them on all the data would leak test information.</p>`},
+  {id:"p-tfidf", day:"P", type:"code", title:"The vectorizer settings",
+   body:`<pre><code>TfidfVectorizer(ngram_range=(1, 2),
+  min_df=3, max_features=200_000,
+  sublinear_tf=True)</code></pre>`},
+  {id:"p-static", day:"P", type:"rule", title:"Free hosting trick",
+   body:`<p>Docker Spaces need PRO; static Spaces are free. Export the weights to JSON and run the maths in the browser, after verifying it matches scikit-learn.</p>`},
 ];
 
-// ---------- state ----------
-const store = {
-  get(){ try { return JSON.parse(localStorage.getItem("ml-sticky-done") || "[]"); } catch(e){ return []; } },
-  set(arr){ try { localStorage.setItem("ml-sticky-done", JSON.stringify(arr)); } catch(e){} }
-};
-let done = new Set(store.get());
-let activeDay = "all", activeType = "all", query = "", hideDone = false;
+const FORMULAS = [
+  // ===================== Day 1 =====================
+  {id:"f1-mean", day:1, name:"Mean (average)",
+   tex:R`\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i = \frac{x_1 + x_2 + \dots + x_n}{n}`,
+   symbols:[[R`\bar{x}`,"the mean, read \"x bar\""],[R`n`,"how many values there are"],[R`x_i`,"the i-th value"],[R`\sum`,"\"add up\" all the values"]],
+   example:R`Marks 70, 80, 90 → (70 + 80 + 90) / 3 = <b>80</b>.<pre><code>sum(marks) / len(marks)</code></pre>An empty list gives <code>ZeroDivisionError</code>, so check <code>if marks:</code> first.`,
+   use:"You want one typical value. It's pulled by outliers: one student with 0 drags the class mean down, while the median isn't affected."},
+  {id:"f1-pct", day:1, name:"Percentage",
+   tex:R`\text{percentage} = \frac{\text{part}}{\text{whole}} \times 100`,
+   symbols:[[R`\text{part}`,"marks obtained, or the count you care about"],[R`\text{whole}`,"maximum marks, or the total count"]],
+   example:R`432 out of 500 → 432 / 500 × 100 = <b>86.4%</b>.<pre><code>round(432 / 500 * 100, 1)   # round only for display</code></pre>`,
+   use:"Comparing things measured on different totals (a test out of 50 and one out of 100)."},
+  {id:"f1-wavg", day:1, name:"Weighted average",
+   tex:R`\bar{x}_w = \frac{\sum_{i} w_i\, x_i}{\sum_{i} w_i}`,
+   symbols:[[R`w_i`,"the weight (importance) of value i"],[R`x_i`,"the value"]],
+   example:R`Internal 75 (weight 40%) and final exam 85 (weight 60%) → (0.4×75 + 0.6×85) / (0.4 + 0.6) = 30 + 51 = <b>81</b>.<pre><code>sum(w*x for w, x in zip(weights, marks)) / sum(weights)</code></pre>`,
+   use:"Some values count more than others: course grades, a portfolio's return, or averaging groups of different sizes (weight = group size)."},
+  {id:"f1-divmod", day:1, name:"Floor division and remainder",
+   tex:R`a = (a \,/\!/\, b)\cdot b + (a \bmod b)`,
+   symbols:[[R`a /\!/ b`,"floor division: rounds DOWN to a whole number"],[R`a \bmod b`,"remainder, Python's a % b"]],
+   example:R`7 // 2 = 3 and 7 % 2 = 1, because 3×2 + 1 = 7.<br>Negative numbers floor toward −∞: <code>-7 // 2 = -4</code> (C# gives −3) and <code>-7 % 2 = 1</code>.<br><code>7 / 2 = 3.5</code> always returns a float in Python.`,
+   use:"Pagination (page = index // page_size), checking even/odd (n % 2 == 0), splitting seconds into minutes: divmod(125, 60) = (2, 5)."},
+  {id:"f1-clip", day:1, name:"Capping a value (clipping)",
+   tex:R`x' = \min\big(\max(x,\ L),\ U\big)`,
+   symbols:[[R`L`,"lowest allowed value"],[R`U`,"highest allowed value"],[R`x'`,"the capped value"]],
+   example:R`Marks must be 0–100. L = 0, U = 100: 105 → <b>100</b>, −3 → <b>0</b>, 72 → 72.<pre><code>min(max(x, 0), 100)        # one value
+np.clip(arr, 0, 100)         # whole array</code></pre>`,
+   use:"Plausible but extreme values (winsorizing). For IMPOSSIBLE values (105 out of 100) prefer marking them missing, since you don't know the true value."},
 
+  // ===================== Day 2 =====================
+  {id:"f2-median", day:2, name:"Median",
+   tex:R`\text{median} = \begin{cases} x_{\left(\frac{n+1}{2}\right)} & n \text{ odd} \\[4pt] \dfrac{x_{\left(\frac{n}{2}\right)} + x_{\left(\frac{n}{2}+1\right)}}{2} & n \text{ even} \end{cases}`,
+   symbols:[[R`x_{(k)}`,"the k-th value after SORTING"],[R`n`,"number of values"]],
+   example:R`Sorted 3, 5, 9 → middle = <b>5</b>.<br>Sorted 3, 5, 9, 100 → (5 + 9)/2 = <b>7</b>. The mean is 29.25 because of the 100.<pre><code>np.median(x); df["fare"].median()</code></pre>`,
+   use:"Skewed data or data with outliers (salaries, fares, house prices). Also the safe value for filling missing numbers."},
+  {id:"f2-var", day:2, name:"Variance and standard deviation",
+   tex:R`\sigma^2 = \frac{1}{N}\sum_{i=1}^{N}(x_i-\mu)^2 \qquad s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2 \qquad \sigma=\sqrt{\sigma^2}`,
+   symbols:[[R`\sigma^2,\ \sigma`,"population variance, standard deviation"],[R`s^2,\ s`,"sample variance, standard deviation"],[R`\mu,\ \bar{x}`,"population mean, sample mean"],[R`n-1`,"Bessel's correction: a sample underestimates spread, so divide by one less"]],
+   example:R`2, 4, 4, 4, 5, 5, 7, 9: mean 5, squared gaps sum to 32.<br>Population: 32/8 = 4 → σ = <b>2</b>. Sample: 32/7 = 4.571 → s = <b>2.138</b>.<div class="warn"><code>np.std(x)</code> uses N (ddof=0) but pandas <code>df.x.std()</code> uses n−1 (ddof=1). Same data, different answers.</div>`,
+   use:"Measuring spread: how far values typically sit from the mean. Std is in the original units (marks, ₹), variance is in units squared."},
+  {id:"f2-z", day:2, name:"z-score (standardisation)",
+   tex:R`z = \frac{x - \mu}{\sigma}`,
+   symbols:[[R`z`,"how many standard deviations x is from the mean"],[R`\mu`,"mean"],[R`\sigma`,"standard deviation"]],
+   example:R`Class mean 70, σ = 10. A mark of 90 → z = (90 − 70)/10 = <b>+2</b> (top ~2.3% if marks are normal). A mark of 55 → <b>−1.5</b>.<pre><code>z = (X - X.mean(0)) / X.std(0)     # broadcasting
+from sklearn.preprocessing import StandardScaler</code></pre>`,
+   use:"Putting features on the same scale for distance-based or gradient-based models (KNN, SVM, logistic regression, neural nets). Also outlier detection: |z| > 3."},
+  {id:"f2-minmax", day:2, name:"Min–max scaling",
+   tex:R`x' = \frac{x - x_{\min}}{x_{\max} - x_{\min}}`,
+   symbols:[[R`x'`,"scaled value between 0 and 1"],[R`x_{\min},\ x_{\max}`,"smallest and largest value in the TRAINING data"]],
+   example:R`Ages 0–80: age 20 → (20 − 0)/(80 − 0) = <b>0.25</b>.<br>One outlier (age 200) squashes everyone else near 0, so min–max is sensitive to outliers.`,
+   use:"You need a fixed 0–1 range (image pixels, neural-net inputs). Fit min and max on training data only, then apply them to the test data."},
+  {id:"f2-iqr", day:2, name:"IQR and outlier fences",
+   tex:R`\text{IQR} = Q_3 - Q_1 \qquad \text{outlier if } x < Q_1 - 1.5\,\text{IQR} \ \text{ or } \ x > Q_3 + 1.5\,\text{IQR}`,
+   symbols:[[R`Q_1`,"25th percentile (a quarter of values are below it)"],[R`Q_3`,"75th percentile"],[R`\text{IQR}`,"the range of the middle 50%"]],
+   example:R`Q1 = 10, Q3 = 20 → IQR = 10. Fences: 10 − 15 = <b>−5</b> and 20 + 15 = <b>35</b>. A value of 50 is an outlier.<pre><code>q1, q3 = df.fare.quantile([.25, .75])
+iqr = q3 - q1</code></pre>These are exactly the whiskers of a box plot.`,
+   use:"Finding outliers in skewed data, where z-scores mislead because the mean and σ are themselves pulled by the outliers."},
+  {id:"f2-cov", day:2, name:"Covariance",
+   tex:R`\operatorname{cov}(x,y) = \frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})(y_i-\bar{y})`,
+   symbols:[[R`(x_i-\bar{x})(y_i-\bar{y})`,"positive when both are above (or both below) their means"]],
+   example:R`Hours studied (1, 2, 3) vs marks (50, 60, 70): gaps (−1, 0, 1) and (−10, 0, 10). Products sum to 20 → cov = 20/2 = <b>10</b>. Positive means they move together.`,
+   use:"Direction of a linear relationship. Its size depends on units (marks vs %), so compare strengths with correlation instead."},
+  {id:"f2-corr", day:2, name:"Pearson correlation",
+   tex:R`r = \frac{\sum (x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum (x_i-\bar{x})^2}\ \sqrt{\sum (y_i-\bar{y})^2}} = \frac{\operatorname{cov}(x,y)}{s_x\, s_y}`,
+   symbols:[[R`r`,"between −1 and +1"],[R`+1 / -1`,"perfect straight-line rise / fall"],[R`0`,"no LINEAR relationship"]],
+   example:R`Hours vs marks above: cov 10, s_x = 1, s_y = 10 → r = 10/(1×10) = <b>1.0</b>, a perfect line.<br>y = x² on x = −2…2 gives r = 0 even though y depends completely on x.<pre><code>df.corr(numeric_only=True)
+df[["a","b"]].corr(method="spearman")   # rank-based</code></pre>`,
+   use:"Quick screen for linear links between numeric columns. Use Spearman for monotonic but curved links, and remember correlation ≠ causation."},
+  {id:"f2-log", day:2, name:"Log transform (log1p)",
+   tex:R`y = \ln(1 + x) \qquad x = e^{y} - 1`,
+   symbols:[[R`\ln`,"natural log (base e ≈ 2.718)"],[R`1+x`,"the +1 makes zero safe: ln(1) = 0"]],
+   example:R`Titanic fares: 0 → <b>0</b>, 7.25 → 2.11, 512 → <b>6.24</b>. A 70× gap becomes 3×.<pre><code>df["log_fare"] = np.log1p(df["fare"])
+np.expm1(pred)                # back to the original units</code></pre>`,
+   use:"Right-skewed, positive data (prices, income, counts). It makes multiplicative differences additive and tames outliers."},
+  {id:"f2-rate", day:2, name:"Rate = mean of a 0/1 column",
+   tex:R`\text{rate} = \frac{1}{n}\sum_{i=1}^{n} y_i = \frac{\#\{y_i = 1\}}{n}, \qquad y_i \in \{0,1\}`,
+   symbols:[[R`y_i`,"1 if the event happened (survived), else 0"]],
+   example:R`Titanic: 342 of 891 survived → <b>0.384</b>. By group: female 0.742, male 0.189.<pre><code>df.groupby("sex")["survived"].mean()</code></pre>`,
+   use:"Any yes/no outcome per group: conversion rate, churn rate, spam rate."},
+  {id:"f2-baseline", day:2, name:"Baseline (majority-class) accuracy",
+   tex:R`\text{baseline} = \max(p,\ 1-p)`,
+   symbols:[[R`p`,"share of the positive class"]],
+   example:R`Titanic p = 0.384 → always predict "died" → max(0.384, 0.616) = <b>61.6%</b> accuracy with no model at all.<br>Fraud at 0.5% → a do-nothing model scores 99.5%.`,
+   use:"Before celebrating any accuracy number. A model is only useful if it clearly beats this."},
+  {id:"f2-missing", day:2, name:"Missing-value percentage",
+   tex:R`\text{missing \%} = \frac{\text{number of missing values}}{n} \times 100`,
+   symbols:[[R`n`,"number of rows"]],
+   example:R`Titanic deck: 688/891 = <b>77.2%</b> → drop the column. Age: 177/891 = <b>19.9%</b> → impute by group median.<pre><code>df.isna().mean().mul(100).sort_values(ascending=False)</code></pre>`,
+   use:"The first step of cleaning: it decides drop vs impute for each column."},
+
+  // ===================== Day 3 =====================
+  {id:"f3-classical", day:3, name:"Probability of an event",
+   tex:R`P(A) = \frac{\text{outcomes in } A}{\text{all equally likely outcomes}}, \qquad 0 \le P(A) \le 1`,
+   symbols:[[R`A`,"an event, e.g. \"roll is even\""],[R`P(A)`,"probability of A"]],
+   example:R`Die, A = even = {2, 4, 6} → 3/6 = <b>0.5</b>. From data: P(survived) = 342/891 = 0.384.`,
+   use:"Counting equally likely cases, or estimating from data as a relative frequency."},
+  {id:"f3-complement", day:3, name:"Complement rule",
+   tex:R`P(\text{not } A) = 1 - P(A) \qquad P(\text{at least one}) = 1 - P(\text{none})`,
+   symbols:[[R`\text{not } A`,"A does not happen (also written A′ or Aᶜ)"]],
+   example:R`At least one six in 4 rolls: 1 − (5/6)⁴ = 1 − 0.482 = <b>0.518</b>.<br>Birthday problem: with 23 people, P(at least two share) = 1 − (365/365 × 364/365 × … × 343/365) ≈ <b>0.507</b>.`,
+   use:"Any \"at least one\" question. Counting \"none\" is almost always easier."},
+  {id:"f3-addition", day:3, name:"Addition rule (OR)",
+   tex:R`P(A \cup B) = P(A) + P(B) - P(A \cap B)`,
+   symbols:[[R`A \cup B`,"A or B (or both)"],[R`A \cap B`,"A and B together"]],
+   example:R`Card is a heart or a king: 13/52 + 4/52 − 1/52 (king of hearts counted twice) = 16/52 = <b>0.308</b>.`,
+   use:"\"Either\" questions. Drop the last term only if A and B can't happen together (mutually exclusive)."},
+  {id:"f3-conditional", day:3, name:"Conditional probability",
+   tex:R`P(A \mid B) = \frac{P(A \cap B)}{P(B)}`,
+   symbols:[[R`A \mid B`,"A given that B has happened"],[R`P(B)`,"must be greater than 0"]],
+   example:R`Die: P(6 | even) = (1/6) / (3/6) = <b>1/3</b>.<br>Titanic: P(survived | female) = 233/314 = <b>0.742</b>.<pre><code>df[df.sex == "female"].survived.mean()   # filter = condition</code></pre>`,
+   use:"Whenever you filter data. Every row filter in pandas is a conditional probability."},
+  {id:"f3-mult", day:3, name:"Multiplication rule (AND) and independence",
+   tex:R`P(A \cap B) = P(A)\,P(B \mid A) \qquad \text{independent} \iff P(A \cap B) = P(A)\,P(B)`,
+   symbols:[[R`P(B \mid A)`,"B's probability once A is known"],[R`\text{independent}`,"knowing A doesn't change B: P(B|A) = P(B)"]],
+   example:R`Two aces <b>without</b> replacement: 4/52 × 3/51 = <b>0.0045</b>.<br><b>With</b> replacement (independent): 4/52 × 4/52 = <b>0.0059</b>.`,
+   use:"Chains of events. Naive Bayes multiplies word probabilities because it ASSUMES independence."},
+  {id:"f3-total", day:3, name:"Law of total probability",
+   tex:R`P(B) = P(B \mid A)\,P(A) + P(B \mid \text{not } A)\,P(\text{not } A)`,
+   symbols:[[R`A,\ \text{not } A`,"two cases that cover everything"]],
+   example:R`1% have a disease; the test is positive for 99% of the sick and 5% of the healthy.<br>P(positive) = 0.99×0.01 + 0.05×0.99 = 0.0099 + 0.0495 = <b>0.0594</b>.`,
+   use:"Working out the denominator of Bayes' theorem: split by every way B can happen."},
+  {id:"f3-bayes", day:3, name:"Bayes' theorem",
+   tex:R`P(A \mid B) = \frac{P(B \mid A)\, P(A)}{P(B)} \qquad \text{posterior} = \frac{\text{likelihood} \times \text{prior}}{\text{evidence}}`,
+   symbols:[[R`P(A)`,"prior: belief before seeing evidence"],[R`P(B \mid A)`,"likelihood: how probable the evidence is if A is true"],[R`P(A \mid B)`,"posterior: updated belief after the evidence"],[R`P(B)`,"evidence: from the law of total probability"]],
+   example:R`Same test: P(disease | positive) = 0.0099 / 0.0594 = <b>0.167</b>. A "99% accurate" test, yet only 1 in 6 positives is truly sick, because the disease is rare.`,
+   use:"Turning P(evidence | cause), which is easy to measure, into P(cause | evidence), which is what you actually want. It's the basis of spam filters and medical tests."},
+  {id:"f3-expect", day:3, name:"Expected value and variance of a random variable",
+   tex:R`E[X] = \sum_x x\,P(X{=}x) \qquad \operatorname{Var}(X) = E[X^2] - (E[X])^2`,
+   symbols:[[R`E[X]`,"long-run average value"],[R`E[X^2]`,"average of the squared values"]],
+   example:R`Fair die: E[X] = (1+2+…+6)/6 = <b>3.5</b>. E[X²] = 91/6 = 15.17 → Var = 15.17 − 12.25 = <b>2.92</b>.<br>Bet: win ₹100 with p = 0.3, lose ₹50 otherwise → E = 30 − 35 = <b>−₹5</b> per bet.`,
+   use:"Deciding under uncertainty (expected profit, expected cost of errors) and summarising any distribution."},
+  {id:"f3-bern", day:3, name:"Bernoulli distribution",
+   tex:R`P(X{=}1)=p,\quad P(X{=}0)=1-p,\qquad E[X]=p,\quad \operatorname{Var}(X)=p(1-p)`,
+   symbols:[[R`p`,"probability of success"]],
+   example:R`One email, P(spam) = 0.4 → mean 0.4, variance 0.4×0.6 = <b>0.24</b>.`,
+   use:"A single yes/no outcome. Logistic regression models each label as Bernoulli(p)."},
+  {id:"f3-binom", day:3, name:"Binomial distribution",
+   tex:R`P(X{=}k) = \binom{n}{k} p^{k}(1-p)^{n-k}, \qquad \binom{n}{k}=\frac{n!}{k!\,(n-k)!},\quad E[X]=np,\quad \operatorname{Var}(X)=np(1-p)`,
+   symbols:[[R`n`,"number of independent trials"],[R`k`,"number of successes"],[R`\binom{n}{k}`,"ways to choose which k trials succeed"]],
+   example:R`Exactly 5 heads in 10 flips: 252 × 0.5¹⁰ = <b>0.246</b>.<br>200 visitors, 3% buy: mean 6. P(10 or more) = <code>stats.binom(200, .03).sf(9)</code>.`,
+   use:"Counting successes in a FIXED number of independent trials with the same p."},
+  {id:"f3-poisson", day:3, name:"Poisson distribution",
+   tex:R`P(X{=}k) = \frac{\lambda^{k} e^{-\lambda}}{k!}, \qquad E[X] = \operatorname{Var}(X) = \lambda`,
+   symbols:[[R`\lambda`,"average number of events per interval"],[R`k`,"number of events (0, 1, 2, …)"]],
+   example:R`A help desk gets λ = 3 calls/hour. P(no calls) = e⁻³ = <b>0.050</b>. P(exactly 3) = 27e⁻³/6 = <b>0.224</b>.`,
+   use:"Counts of rare events in a time or space window with no fixed upper limit: calls, server errors, accidents."},
+  {id:"f3-normal", day:3, name:"Normal (Gaussian) distribution",
+   tex:R`f(x) = \frac{1}{\sigma\sqrt{2\pi}}\, e^{-\frac{(x-\mu)^2}{2\sigma^2}}`,
+   symbols:[[R`\mu`,"mean (centre of the bell)"],[R`\sigma`,"standard deviation (width)"],[R`f(x)`,"density, NOT a probability; it can be greater than 1"]],
+   example:R`Heights μ = 170 cm, σ = 10. P(height ≤ 180) = P(z ≤ 1) = <b>0.841</b>.<br>68–95–99.7 rule: 68% within ±1σ (160–180), 95% within ±2σ, 99.7% within ±3σ.<pre><code>stats.norm(170, 10).cdf(180)</code></pre>`,
+   use:"Measurements made of many small independent effects; averages of large samples (Central Limit Theorem, Day 4)."},
+  {id:"f3-cdf", day:3, name:"CDF and probability of a range",
+   tex:R`F(x) = P(X \le x) \qquad P(a < X \le b) = F(b) - F(a)`,
+   symbols:[[R`F(x)`,"cumulative distribution function, from 0 to 1"]],
+   example:R`Heights: P(160 < X ≤ 180) = 0.841 − 0.159 = <b>0.683</b>.<br>Discrete trap: P(X ≥ 10) = 1 − F(9) = <code>sf(9)</code>, not sf(10).`,
+   use:"Any \"between\", \"less than\" or \"more than\" question, for both discrete and continuous variables."},
+  {id:"f3-nb", day:3, name:"Naive Bayes classifier",
+   tex:R`\hat{c} = \arg\max_{c}\ \Big[\log P(c) + \sum_{i=1}^{m} \log P(w_i \mid c)\Big]`,
+   symbols:[[R`c`,"a class, e.g. spam or ham"],[R`w_i`,"the i-th word in the message"],[R`\arg\max_c`,"pick the class with the highest score"]],
+   example:R`Toy filter (4 emails), message "free cash prize":<br>spam: 0.5 × 3/15 × 2/15 × 2/15 = 0.00178<br>ham: 0.5 × 2/15 × 1/15 × 1/15 = 0.00030<br>→ P(spam | message) = 0.00178/(0.00178 + 0.00030) = <b>0.857</b> → SPAM.`,
+   use:"Fast text classification baselines (spam, topic, sentiment). It trains in one pass over the data."},
+  {id:"f3-laplace", day:3, name:"Laplace (add-one) smoothing",
+   tex:R`P(w \mid c) = \frac{\text{count}(w, c) + \alpha}{\text{total words in } c + \alpha\,|V|}, \qquad \alpha = 1`,
+   symbols:[[R`|V|`,"vocabulary size (number of distinct words)"],[R`\alpha`,"smoothing strength (scikit-learn's alpha; TextPulse used 0.1)"]],
+   example:R`Toy filter: spam has 6 words, |V| = 9. "free" seen twice → (2+1)/(6+9) = <b>3/15</b>. "meeting" never seen in spam → (0+1)/15 = <b>1/15</b>, not 0.`,
+   use:"Always with count-based probabilities, so one unseen word can't zero out the whole product."},
+  {id:"f3-logs", day:3, name:"Log of a product",
+   tex:R`\log\Big(\prod_{i} p_i\Big) = \sum_{i} \log p_i`,
+   symbols:[[R`\prod`,"multiply all of them"]],
+   example:R`(10⁻⁵)¹⁰⁰ = 10⁻⁵⁰⁰ underflows to 0.0 in floating point. In logs: 100 × ln(10⁻⁵) = <b>−1151.3</b>, perfectly fine.`,
+   use:"Multiplying many probabilities (Naive Bayes, likelihoods, language models). The argmax doesn't change because log is increasing."},
+
+  // ===================== Project: TextPulse =====================
+  {id:"fp-tf", day:"P", name:"Term frequency (sublinear)",
+   tex:R`\text{tf}(t, d) = 1 + \ln\big(\text{count}(t, d)\big) \quad (\text{0 if the word is absent})`,
+   symbols:[[R`t`,"a term: word or word pair"],[R`d`,"a document (one message)"]],
+   example:R`"free" appears 3 times → 1 + ln 3 = <b>2.10</b>, not 3. Ten times → 3.30, not 10.<pre><code>TfidfVectorizer(sublinear_tf=True)</code></pre>`,
+   use:"Repetition should add evidence but with diminishing returns: \"FREE FREE FREE FREE\" shouldn't count 4× as spammy."},
+  {id:"fp-idf", day:"P", name:"Inverse document frequency (smoothed)",
+   tex:R`\text{idf}(t) = \ln\frac{1 + N}{1 + \text{df}(t)} + 1`,
+   symbols:[[R`N`,"number of documents used to fit the vectorizer"],[R`\text{df}(t)`,"how many documents contain t"]],
+   example:R`N = 1,000. A rare word in 9 documents → ln(1001/10) + 1 = <b>5.61</b>. A word in every document → ln(1001/1001) + 1 = <b>1.0</b>.`,
+   use:"Down-weighting words that appear everywhere (\"the\", \"is\") and up-weighting distinctive ones (\"prize\", \"unsubscribe\")."},
+  {id:"fp-tfidf", day:"P", name:"TF-IDF vector with L2 normalisation",
+   tex:R`v_t = \text{tf}(t,d)\cdot\text{idf}(t), \qquad \hat{v} = \frac{v}{\lVert v \rVert_2}, \quad \lVert v \rVert_2 = \sqrt{\textstyle\sum_t v_t^2}`,
+   symbols:[[R`v`,"one number per vocabulary term (mostly zeros: sparse)"],[R`\hat{v}`,"the same vector scaled to length 1"]],
+   example:R`Two words with v = (3, 4): length √(9+16) = 5 → v̂ = (<b>0.6, 0.8</b>).`,
+   use:"Turning text into numbers a linear model can use. Normalising stops long emails from getting larger scores just for being long."},
+  {id:"fp-sigmoid", day:"P", name:"Logistic regression: score and sigmoid",
+   tex:R`z = \mathbf{w}\cdot\hat{\mathbf{v}} + b = \sum_t w_t\,\hat{v}_t + b, \qquad p = \sigma(z) = \frac{1}{1 + e^{-z}}`,
+   symbols:[[R`w_t`,"learned weight of term t (positive pushes toward spam/positive)"],[R`b`,"bias (intercept)"],[R`p`,"probability of the second class"]],
+   example:R`z = 0 → p = <b>0.5</b>. z = 2 → 1/(1 + e⁻²) = <b>0.881</b>. z = −2 → <b>0.119</b>.<br>This is exactly what TextPulse's browser engine computes for every message.`,
+   use:"Binary classification where you want a probability and an explanation (each weight is readable)."},
+  {id:"fp-contrib", day:"P", name:"Why a word mattered (contribution)",
+   tex:R`\text{contribution}_t = \hat{v}_t \cdot w_t`,
+   symbols:[[R`\hat{v}_t`,"the word's TF-IDF value in this message"],[R`w_t`,"the word's learned weight"]],
+   example:R`The phishing sample: "your" +0.948, "account" +0.453, "url" +0.434, "urgent" +0.376 → spam, 87% sure.`,
+   use:"Explaining a linear model's prediction exactly. The contributions plus the bias add up to z."},
+  {id:"fp-logloss", day:"P", name:"Log loss (binary cross-entropy)",
+   tex:R`L = -\frac{1}{n}\sum_{i=1}^{n}\Big[y_i \ln p_i + (1-y_i)\ln(1-p_i)\Big] \;+\; \frac{1}{2C}\lVert \mathbf{w} \rVert^2`,
+   symbols:[[R`y_i`,"true label, 0 or 1"],[R`p_i`,"predicted probability of 1"],[R`C`,"inverse regularisation strength (TextPulse: C = 4)"]],
+   example:R`True spam (y = 1): p = 0.9 → loss 0.105; p = 0.1 → loss <b>2.303</b>. Confident mistakes cost a lot.`,
+   use:"What logistic regression minimises while training. The second term (L2 regularisation) keeps weights small to reduce overfitting."},
+  {id:"fp-metrics", day:"P", name:"Accuracy, precision, recall, F1",
+   tex:R`\text{acc}=\frac{TP+TN}{TP+TN+FP+FN}\quad \text{prec}=\frac{TP}{TP+FP}\quad \text{rec}=\frac{TP}{TP+FN}\quad F_1=\frac{2\,\text{prec}\cdot\text{rec}}{\text{prec}+\text{rec}}`,
+   symbols:[[R`TP`,"spam correctly flagged"],[R`FP`,"ham wrongly flagged (false alarm)"],[R`FN`,"spam missed"],[R`TN`,"ham correctly passed"]],
+   example:R`TextPulse spam test set: TP 2,960, FP 58, FN 88, TN 4,027.<br>Accuracy 6,987/7,133 = <b>97.95%</b>, precision 2,960/3,018 = <b>98.08%</b>, recall 2,960/3,048 = <b>97.11%</b>, F1 = <b>97.59%</b>.`,
+   use:"Precision when false alarms are costly (blocking a real email); recall when misses are costly (missing fraud, disease). F1 balances both."},
+  {id:"fp-throughput", day:"P", name:"Throughput",
+   tex:R`\text{throughput} = \frac{\text{records processed}}{\text{seconds}}`,
+   symbols:[],
+   example:R`TextPulse bulk benchmark: 1,635,663 records in 42.5 s → about <b>38,500 records/second</b> on one CPU.`,
+   use:"Sizing a system: how many machines you need for a target load."},
+];
+
+const LESSONS = [
+  // ===================== Day 1: Python =====================
+  {id:"l1-run", day:1, title:"1. How Python runs your code (and how it differs from C#)",
+   body:R`<p>Python is <b>interpreted</b> and <b>dynamically typed</b>. You don't compile a project first; Python reads your file top to bottom and runs it. You also never declare types: the <b>object</b> knows its type, and a variable is only a <b>name tag</b> stuck on an object.</p>
+<pre><code>x = 5          # the name x points to an int object 5
+x = "hello"    # now x points to a str object; the 5 is thrown away
+type(x)        # &lt;class 'str'&gt;</code></pre>
+<table><tr><th></th><th>C#</th><th>Python</th></tr>
+<tr><td>Types</td><td>checked at compile time</td><td>checked while running</td></tr>
+<tr><td>Blocks</td><td>{ curly braces }</td><td>indentation (4 spaces)</td></tr>
+<tr><td>Null</td><td>null</td><td>None</td></tr>
+<tr><td>Logic</td><td>&amp;&amp;  ||  !</td><td>and  or  not</td></tr>
+<tr><td>LINQ Select/Where</td><td>nums.Where(x =&gt; x &gt; 2).Select(x =&gt; x*x)</td><td>[x*x for x in nums if x &gt; 2]</td></tr></table>
+<p><b>Everything is an object</b>, including numbers, functions and classes. That's why you can pass a function as an argument (<code>sorted(students, key=get_marks)</code>) or store models in a dictionary (<code>{"nb": MultinomialNB(), "lr": LogisticRegression()}</code>). ML code uses this constantly.</p>
+<div class="tip"><b>Type hints</b> (<code>def grade(mark: float) -&gt; str:</code>) are optional labels for readers and tools like VS Code. Python does not enforce them when running.</div>`},
+
+  {id:"l1-types", day:1, title:"2. Core types: int, float, str, bool, None",
+   body:R`<ul>
+<li><b>int</b>: whole numbers with no size limit. <code>2**100</code> just works, unlike C#'s <code>int</code>, which overflows.</li>
+<li><b>float</b>: 64-bit decimals (C#'s <code>double</code>). Not exact: <code>0.1 + 0.2 == 0.30000000000000004</code>. Compare floats with <code>math.isclose(a, b)</code>, and use <code>decimal.Decimal</code> for money.</li>
+<li><b>str</b>: text, <b>immutable</b>. <code>s.upper()</code> returns a NEW string. Use f-strings to format: <code>f"{name} scored {avg:.1f}"</code>.</li>
+<li><b>bool</b>: <code>True</code>/<code>False</code>, and actually a kind of int (True == 1). That's why <code>sum([True, False, True])</code> is 2, and why the mean of a 0/1 column is a rate.</li>
+<li><b>None</b>: "no value". Test it with <code>is None</code>, not <code>== None</code>.</li></ul>
+<h4>Truthiness</h4>
+<p>These all count as False in an <code>if</code>: <code>0, 0.0, "", [], {}, set(), None</code>. So <code>if marks:</code> means "if the list is not empty".</p>
+<h4>Division</h4>
+<pre><code>7 / 2    # 3.5   true division, always a float
+7 // 2   # 3     floor division
+7 % 2    # 1     remainder
+-7 // 2  # -4    floors toward minus infinity (C# gives -3)</code></pre>`},
+
+  {id:"l1-structs", day:1, title:"3. Data structures: list, tuple, dict, set",
+   body:R`<table><tr><th>Structure</th><th>Example</th><th>Ordered?</th><th>Changeable?</th><th>Duplicates?</th><th>Typical use</th></tr>
+<tr><td>list</td><td><code>[70, 85, 85]</code></td><td>yes</td><td>yes</td><td>yes</td><td>a sequence you grow or edit</td></tr>
+<tr><td>tuple</td><td><code>(12.97, 77.59)</code></td><td>yes</td><td>no</td><td>yes</td><td>a fixed record; can be a dict key</td></tr>
+<tr><td>dict</td><td><code>{"roll": 7, "name": "Ravi"}</code></td><td>insertion order</td><td>yes</td><td>keys unique</td><td>look up by key</td></tr>
+<tr><td>set</td><td><code>{"ml", "dl"}</code></td><td>no</td><td>yes</td><td>no</td><td>uniqueness, membership tests</td></tr></table>
+<h4>Speed (Big-O) worth knowing</h4>
+<ul><li><code>x in my_list</code> checks every item: <b>O(n)</b>. <code>x in my_set</code> or <code>key in my_dict</code> uses a hash: <b>O(1)</b> on average. For 1 million lookups that's the difference between minutes and milliseconds.</li>
+<li><code>list.append</code> is O(1); <code>list.insert(0, x)</code> shifts everything, O(n). Use <code>collections.deque</code> for queues.</li></ul>
+<h4>Copying: the most common bug</h4>
+<pre><code>a = [1, 2, 3]
+b = a            # NOT a copy: two names, one list
+b.append(4)      # a is now [1, 2, 3, 4] too
+c = a.copy()     # shallow copy: new outer list
+import copy
+d = copy.deepcopy(nested)   # copies inner lists too</code></pre>
+<p>A <b>shallow</b> copy duplicates the outer container but shares the inner objects. If a list holds lists, change an inner one and both copies see it. That's when you need <code>deepcopy</code>.</p>
+<h4>Useful dict tools</h4>
+<pre><code>d.get("email", "none")              # default instead of KeyError
+from collections import Counter, defaultdict
+Counter("free free cash".split())   # {'free': 2, 'cash': 1}
+groups = defaultdict(list); groups["A"].append("Ravi")</code></pre>`},
+
+  {id:"l1-loops", day:1, title:"4. Loops, comprehensions and generators",
+   body:R`<pre><code>for i, name in enumerate(names, start=1):   # index + value
+    print(i, name)
+for name, mark in zip(names, marks):        # walk two lists together
+    print(name, mark)</code></pre>
+<h4>Comprehensions: a loop that builds a collection in one line</h4>
+<pre><code>squares = [x*x for x in nums if x &gt; 2]           # list
+lookup  = {s.roll: s for s in students}           # dict
+grades  = {grade(m) for m in marks}               # set</code></pre>
+<p>Read it as: <i>[what to keep] for [each item] in [collection] if [condition]</i>. It maps directly to LINQ: the <code>if</code> is Where and the front expression is Select.</p>
+<h4>Generators: lazy, one value at a time</h4>
+<pre><code>total = sum(m for m in marks)        # no [] → no temporary list in memory
+def read_big_file(path):
+    for line in open(path):
+        yield line.strip()            # pauses here, resumes on next()</code></pre>
+<p>A list stores all values in memory at once; a generator produces them on demand. For a 10 GB file, a generator uses almost no memory. TextPulse's live stream is an endless generator: it yields test messages forever.</p>
+<div class="warn">A generator can be read only once. After <code>list(gen)</code> it's empty.</div>`},
+
+  {id:"l1-funcs", day:1, title:"5. Functions: arguments, defaults, *args, **kwargs, scope",
+   body:R`<pre><code>def grade(mark, pass_mark=40, *, strict=False):
+    """Return a letter grade."""      # docstring
+    ...
+grade(75)                  # positional
+grade(75, pass_mark=50)    # keyword
+grade(75, strict=True)     # after *, arguments must be keyword-only</code></pre>
+<h4>*args and **kwargs</h4>
+<pre><code>def log(*args, **kwargs):
+    print(args)     # tuple of extra positional values
+    print(kwargs)   # dict of extra keyword values
+log(1, 2, level="info")   # (1, 2)  {'level': 'info'}
+
+config = {"n_estimators": 200, "max_depth": 8}
+model = RandomForestClassifier(**config)   # unpack a dict into keyword args</code></pre>
+<h4>The mutable default trap</h4>
+<pre><code>def add(item, bucket=[]):      # BUG: one list, created once, shared forever
+    bucket.append(item); return bucket
+add(1); add(2)                 # [1, 2]  surprise!
+
+def add(item, bucket=None):    # FIX
+    if bucket is None:
+        bucket = []
+    bucket.append(item); return bucket</code></pre>
+<p>Default values are evaluated <b>once</b>, when the function is defined, not on every call.</p>
+<h4>Scope (LEGB)</h4>
+<p>Python looks up a name in this order: <b>L</b>ocal (inside the function) → <b>E</b>nclosing function → <b>G</b>lobal (module) → <b>B</b>uilt-ins. Reading a global inside a function works, but assigning to it creates a new local variable unless you write <code>global x</code>. Better: pass values in as parameters.</p>
+<h4>lambda</h4>
+<pre><code>sorted(students, key=lambda s: s.average, reverse=True)</code></pre>
+<p>A lambda is a one-expression function without a name. It's handy for <code>key=</code> arguments and pandas <code>.apply</code>.</p>`},
+
+  {id:"l1-classes", day:1, title:"6. Classes and objects",
+   body:R`<pre><code>class Student:
+    school = "IIIT-H"                       # class attribute: shared by all
+
+    def __init__(self, roll, name, marks):  # constructor
+        self.roll = roll                    # instance attributes: one per object
+        self.name = name
+        self.marks = marks
+
+    @property
+    def average(self):                      # used like an attribute: s.average
+        return sum(self.marks) / len(self.marks)
+
+    def __repr__(self):                     # what print() shows
+        return f"Student({self.roll}, {self.name!r})"
+
+s = Student(7, "Ravi", [70, 80, 90])
+s.average     # 80.0</code></pre>
+<ul><li><b>self</b> is just the object the method was called on. <code>s.average()</code> is really <code>Student.average(s)</code>. C# hides <code>this</code>; Python makes you write it.</li>
+<li><b>Dunder methods</b> (<code>__init__</code>, <code>__repr__</code>, <code>__len__</code>, <code>__eq__</code>) plug your class into Python's built-in behaviour.</li>
+<li><b>Inheritance</b>: <code>class TopStudent(Student):</code> and call the parent with <code>super().__init__(...)</code>.</li>
+<li><b>dataclass</b> writes <code>__init__</code>, <code>__repr__</code> and <code>__eq__</code> for you:
+<pre><code>from dataclasses import dataclass
+@dataclass
+class Student:
+    roll: int
+    name: str
+    marks: list</code></pre></li></ul>
+<div class="tip">Every scikit-learn model is a class with the same methods: <code>fit()</code>, <code>predict()</code>, <code>predict_proba()</code>. Learned values end with an underscore (<code>coef_</code>, <code>classes_</code>). Once you know this pattern, you know how to use all of them.</div>`},
+
+  {id:"l1-errors", day:1, title:"7. Errors and writing robust, data-driven code",
+   body:R`<pre><code>try:
+    avg = sum(marks) / len(marks)
+except ZeroDivisionError:
+    avg = None
+except (ValueError, TypeError) as e:
+    print("bad data:", e)
+finally:
+    print("always runs")       # cleanup</code></pre>
+<ul><li>Catch <b>specific</b> exceptions. A bare <code>except:</code> also hides real bugs, even typos.</li>
+<li><b>Fail early</b> with a clear message: <code>raise ValueError(f"mark {m} is out of range 0–100")</code>.</li>
+<li><code>with open(path) as f:</code> closes the file even if an error happens, like C#'s <code>using</code>.</li></ul>
+<h4>Habits from the Day 1 exercises</h4>
+<ul><li><b>Impossible values</b> (105 out of 100) → mark as missing (NaN) and impute later. <b>Plausible but extreme</b> → you may cap them.</li>
+<li><b>Key by a unique ID</b>, never by name: two students called Ravi would overwrite each other.</li>
+<li><b>Data-driven code</b>: loop over the subjects that exist instead of hard-coding "math", "science"; then adding a subject needs no code change.</li>
+<li><b>Round only for display.</b> Rounding mid-calculation adds errors across millions of rows.</li></ul>`},
+
+  // ===================== Day 2: NumPy, Pandas, EDA =====================
+  {id:"l2-numpy", day:2, title:"1. NumPy arrays: what they are and why they're fast",
+   body:R`<p>A NumPy <b>ndarray</b> is a block of memory holding numbers of <b>one type</b> (all float64, say), side by side. A Python list is an array of pointers to separate objects scattered in memory. Because NumPy knows the type and layout, it runs loops in compiled C ("vectorised"), typically <b>10–100× faster</b>.</p>
+<pre><code>import numpy as np
+a = np.array([[1, 2, 3], [4, 5, 6]])
+a.shape   # (2, 3): 2 rows, 3 columns
+a.ndim    # 2
+a.dtype   # int64
+a * 10                     # every element; no loop
+np.zeros((3, 4)); np.ones(5); np.arange(0, 10, 2); np.linspace(0, 1, 5)
+rng = np.random.default_rng(42); rng.normal(170, 10, size=1000)</code></pre>
+<h4>Indexing</h4>
+<pre><code>a[0, 2]        # row 0, column 2 → 3
+a[:, 1]        # every row, column 1 → [2, 5]
+a[a &gt; 2]       # boolean mask → [3, 4, 5, 6]
+a[(a &gt; 1) &amp; (a &lt; 6)]   # use &amp; | ~ and brackets, not and/or</code></pre>
+<div class="warn"><b>Slices are views, not copies.</b> <code>b = a[0]; b[0] = 99</code> changes <code>a</code> too. Use <code>a[0].copy()</code> when you need independence. Boolean or fancy indexing (<code>a[[0, 1]]</code>) always returns a copy.</div>`},
+
+  {id:"l2-axis", day:2, title:"2. Axis, aggregation and broadcasting",
+   body:R`<p><b>The axis you name is the one that disappears.</b> On a (rows, columns) array:</p>
+<pre><code>m = np.array([[70, 80], [90, 60], [50, 100]])   # 3 students × 2 subjects
+m.mean(axis=0)   # [70., 80.]       collapse rows → one value per subject
+m.mean(axis=1)   # [75., 75., 75.]  collapse columns → one value per student</code></pre>
+<p>In pandas it's the same: <code>df.mean()</code> gives one value per column, and <code>df.drop(columns=...)</code> is <code>axis=1</code>.</p>
+<h4>Broadcasting: arithmetic on different shapes</h4>
+<p>NumPy compares shapes from the <b>right</b>. Two dimensions fit if they're equal or one of them is 1; the 1 is "stretched" without copying memory.</p>
+<pre><code>(3, 2) - (2,)    → OK: subtract a row from every row
+(3, 2) - (3,)    → ERROR: 2 vs 3 don't match from the right
+(3, 2) - (3, 1)  → OK: subtract one value per row
+
+z = (m - m.mean(axis=0)) / m.std(axis=0)   # standardise each column</code></pre>
+<div class="tip">When confused, print <code>.shape</code> after every step. Most NumPy bugs are shape bugs.</div>`},
+
+  {id:"l2-pandas", day:2, title:"3. Pandas: Series, DataFrame, loading and inspecting",
+   body:R`<p>A <b>Series</b> is one labelled column. A <b>DataFrame</b> is a table: several Series sharing one row index, like a SQL table in memory.</p>
+<pre><code>import pandas as pd
+df = pd.read_csv("titanic.csv")
+df.shape            # (891, 15)
+df.head()           # first 5 rows
+df.info()           # column types and non-null counts → spot missing data
+df.describe()       # count, mean, std, min, quartiles, max for numbers
+df["sex"].value_counts(normalize=True)   # category shares
+df.isna().sum()     # missing values per column</code></pre>
+<h4>Selecting</h4>
+<table><tr><th>You want</th><th>Code</th></tr>
+<tr><td>one column (Series)</td><td><code>df["age"]</code></td></tr>
+<tr><td>several columns</td><td><code>df[["age", "fare"]]</code></td></tr>
+<tr><td>rows by condition</td><td><code>df[df.age &lt; 12]</code></td></tr>
+<tr><td>rows + columns by <b>label</b></td><td><code>df.loc[df.age &lt; 12, ["name", "survived"]]</code></td></tr>
+<tr><td>rows + columns by <b>position</b></td><td><code>df.iloc[0:5, 0:3]</code></td></tr></table>
+<p><code>loc</code> slices <b>include</b> the end label; <code>iloc</code> slices exclude the end, like Python.</p>
+<div class="warn"><b>SettingWithCopyWarning</b>: <code>df[df.age &gt; 60]["fare"] = 0</code> may modify a temporary copy and do nothing. Write <code>df.loc[df.age &gt; 60, "fare"] = 0</code> instead, in one step.</div>`},
+
+  {id:"l2-clean", day:2, title:"4. Cleaning: missing values, types, duplicates",
+   body:R`<h4>Missing values: decide per column</h4>
+<table><tr><th>Situation</th><th>Action</th><th>Titanic example</th></tr>
+<tr><td>Mostly missing</td><td>drop the column</td><td>deck: 77% missing</td></tr>
+<tr><td>Important, partly missing</td><td>impute by GROUP median + add a flag</td><td>age: 20% missing → median per class and sex</td></tr>
+<tr><td>Tiny number of rows</td><td>fill with the mode, or drop those rows</td><td>embarked: 2 missing</td></tr></table>
+<pre><code>df["age_missing"] = df["age"].isna().astype(int)          # keep the information
+df["age"] = df.groupby(["pclass", "sex"])["age"].transform(
+    lambda s: s.fillna(s.median()))
+df["embarked"] = df["embarked"].fillna(df["embarked"].mode()[0])</code></pre>
+<p><b>Why group medians?</b> First-class passengers were older than third-class ones. One overall median would blur that pattern.</p>
+<p><b>Why a flag?</b> Sometimes the fact that a value is missing is itself predictive (e.g. no age recorded for many third-class victims).</p>
+<h4>Other checks</h4>
+<pre><code>df.duplicated().sum(); df = df.drop_duplicates()
+df["date"] = pd.to_datetime(df["date"])
+df["pclass"] = df["pclass"].astype("category")      # less memory, clear meaning
+df["age_band"] = pd.cut(df.age, [0, 12, 18, 60, 80], labels=["child", "teen", "adult", "60+"])</code></pre>
+<div class="warn">Fit any imputation (medians, means) on the <b>training</b> data only, then apply it to the test data. Otherwise test information leaks into training.</div>`},
+
+  {id:"l2-group", day:2, title:"5. groupby, merge, pivot: SQL in pandas",
+   body:R`<table><tr><th>SQL</th><th>pandas</th></tr>
+<tr><td>SELECT a, b</td><td><code>df[["a", "b"]]</code></td></tr>
+<tr><td>WHERE x &gt; 1</td><td><code>df[df.x &gt; 1]</code> or <code>df.query("x &gt; 1")</code></td></tr>
+<tr><td>GROUP BY k, AVG(v)</td><td><code>df.groupby("k")["v"].mean()</code></td></tr>
+<tr><td>several aggregates</td><td><code>df.groupby("k").agg(avg=("v", "mean"), n=("v", "size"))</code></td></tr>
+<tr><td>LEFT JOIN</td><td><code>df.merge(other, on="id", how="left")</code></td></tr>
+<tr><td>UNION ALL</td><td><code>pd.concat([df1, df2])</code></td></tr>
+<tr><td>ORDER BY v DESC</td><td><code>df.sort_values("v", ascending=False)</code></td></tr>
+<tr><td>CASE WHEN</td><td><code>np.where(df.age &lt; 18, "minor", "adult")</code></td></tr></table>
+<h4>agg vs transform</h4>
+<ul><li><code>groupby().agg()</code> returns <b>one row per group</b> (a summary).</li>
+<li><code>groupby().transform()</code> returns <b>one value per original row</b> (the group's value repeated), so you can put it back as a column, as in group-median imputation.</li></ul>
+<pre><code>pd.pivot_table(df, values="survived", index="sex", columns="pclass", aggfunc="mean")
+#          1     2     3
+# female 0.97  0.92  0.50
+# male   0.37  0.16  0.14</code></pre>
+<div class="tip">Avoid <code>.apply</code> with a Python function on big data: it's a hidden loop. Vectorised operations (<code>df.a * df.b</code>, <code>np.where</code>, <code>.str</code> methods) are far faster.</div>`},
+
+  {id:"l2-viz", day:2, title:"6. Visualisation: choosing the right plot",
+   body:R`<table><tr><th>Question</th><th>Plot</th><th>Seaborn</th></tr>
+<tr><td>How is one number distributed?</td><td>histogram / KDE</td><td><code>sns.histplot(df, x="age", kde=True)</code></td></tr>
+<tr><td>How often is each category?</td><td>bar / count</td><td><code>sns.countplot(df, x="pclass")</code></td></tr>
+<tr><td>A rate by category</td><td>bar of means</td><td><code>sns.barplot(df, x="sex", y="survived")</code></td></tr>
+<tr><td>Spread and outliers by group</td><td>box / violin</td><td><code>sns.boxplot(df, x="pclass", y="fare")</code></td></tr>
+<tr><td>Two numbers together</td><td>scatter</td><td><code>sns.scatterplot(df, x="age", y="fare", hue="survived")</code></td></tr>
+<tr><td>Change over time</td><td>line</td><td><code>sns.lineplot(df, x="date", y="sales")</code></td></tr>
+<tr><td>All numeric correlations</td><td>heatmap</td><td><code>sns.heatmap(df.corr(numeric_only=True), annot=True)</code></td></tr></table>
+<p>Every chart needs a title that states the finding ("Women survived at 4× the rate of men"), labelled axes with units, and no 3-D or pie-chart tricks.</p>`},
+
+  {id:"l2-eda", day:2, title:"7. The EDA workflow on Titanic, with findings",
+   body:R`<ol><li><b>Inspect</b>: 891 rows, 15 columns; types; <code>info()</code>.</li>
+<li><b>Missing values</b>: deck 77%, age 20%, embarked 2 rows.</li>
+<li><b>Target</b>: 38.4% survived → baseline accuracy 61.6%.</li>
+<li><b>Univariate</b>: fare is heavily right-skewed (median 14.45, max 512) → log transform.</li>
+<li><b>Bivariate</b>: survival by sex (female 74%, male 19%) and class (1st 63%, 2nd 47%, 3rd 24%).</li>
+<li><b>Multivariate</b>: sex × class pivot: 3rd-class women 50%, 1st-class men 37%.</li>
+<li><b>Statistical tests</b>: chi-square test for sex vs survival gives p ≈ 10⁻⁵⁸, so the link is not chance.</li>
+<li><b>Features</b>: family_size = sibsp + parch + 1, is_alone, title from the name, age bands.</li></ol>
+<h4>Two traps EDA must catch</h4>
+<ul><li><b>Target leakage</b>: the column <code>alive</code> is just <code>survived</code> in words. A model would score 100% and be useless. Ask of every column: <i>would I know this value at prediction time?</i></li>
+<li><b>Correlation blind spots</b>: the heatmap only shows numeric, linear relationships. <code>sex</code>, the strongest predictor, doesn't even appear in it.</li></ul>`},
+
+  {id:"l2-stats", day:2, title:"8. Descriptive statistics and SciPy tests",
+   body:R`<ul><li><b>Centre</b>: mean (sensitive to outliers), median (robust), mode (most common; for categories).</li>
+<li><b>Spread</b>: range, variance, standard deviation, IQR.</li>
+<li><b>Shape</b>: skewness. Right-skewed (long tail to the right, mean &gt; median) is typical for money. Kurtosis measures how heavy the tails are.</li></ul>
+<p>If mean ≫ median, the data is right-skewed: report the median.</p>
+<h4>Hypothesis tests in one paragraph (more on Day 4)</h4>
+<p>Start by assuming "no effect" (the <b>null hypothesis</b>). The <b>p-value</b> is the probability of seeing a difference at least this big if there really were no effect. A small p (below 0.05) means the data would be surprising under "no effect", so you reject it.</p>
+<pre><code>from scipy import stats
+stats.ttest_ind(df[df.survived == 1].fare, df[df.survived == 0].fare)   # compare two means
+table = pd.crosstab(df.sex, df.survived)
+stats.chi2_contingency(table)                                            # two categories linked?</code></pre>
+<div class="warn">A p-value is NOT the probability that the null hypothesis is true, and a tiny p doesn't mean a big or important effect. With huge datasets, trivial differences become "significant".</div>`},
+];
+
+LESSONS.push(
+  // ===================== Day 3: Probability =====================
+  {id:"l3-what", day:3, title:"1. What probability means: events, sample spaces, simulation",
+   body:R`<p>The <b>sample space</b> is the set of every possible outcome (a die: {1, 2, 3, 4, 5, 6}). An <b>event</b> is any group of outcomes ("even" = {2, 4, 6}). A probability is a number from 0 (impossible) to 1 (certain).</p>
+<ul><li><b>Frequentist view</b>: probability is the long-run frequency. Flip a coin 100,000 times and heads settles near 0.5. This is the <b>law of large numbers</b>.</li>
+<li><b>Bayesian view</b>: probability is a degree of belief that you update as evidence arrives (Bayes' theorem).</li></ul>
+<p>In ML you use both: you estimate probabilities from data counts (frequentist), and models like Naive Bayes update beliefs with evidence (Bayesian).</p>
+<h4>When in doubt, simulate</h4>
+<pre><code>rng = np.random.default_rng(42)
+rolls = rng.integers(1, 7, size=(100_000, 4))    # 100k experiments of 4 rolls
+(rolls == 6).any(axis=1).mean()                  # ≈ 0.518, matches 1 − (5/6)**4</code></pre>
+<p>A simulation is a great way to check a formula you're unsure about, in an exam or an interview.</p>`},
+
+  {id:"l3-rules", day:3, title:"2. The rules: complement, addition, multiplication",
+   body:R`<ul><li><b>Complement</b>: \(P(\text{not }A) = 1 - P(A)\). Use it for every "at least one" question.</li>
+<li><b>Addition (OR)</b>: \(P(A \cup B) = P(A) + P(B) - P(A \cap B)\). You subtract the overlap because it was counted twice.</li>
+<li><b>Multiplication (AND)</b>: \(P(A \cap B) = P(A)\,P(B \mid A)\). If A and B are independent, this becomes \(P(A)\,P(B)\).</li></ul>
+<h4>Mutually exclusive vs independent: not the same thing</h4>
+<table><tr><th></th><th>Mutually exclusive</th><th>Independent</th></tr>
+<tr><td>Meaning</td><td>can't happen together</td><td>one doesn't affect the other</td></tr>
+<tr><td>Formula</td><td>\(P(A \cap B) = 0\)</td><td>\(P(A \cap B) = P(A)P(B)\)</td></tr>
+<tr><td>Example</td><td>one roll: "1" and "6"</td><td>two separate rolls</td></tr></table>
+<p>Mutually exclusive events (each with probability above 0) are always <b>dependent</b>: if one happens, you know the other didn't. That's a favourite interview trick.</p>
+<h4>With vs without replacement</h4>
+<p>Drawing two aces <b>without</b> replacement: 4/52 × 3/51 = 0.0045 (the second draw depends on the first). <b>With</b> replacement: (4/52)² = 0.0059 (independent). Train/test splitting is sampling without replacement; bootstrap sampling (Random Forests, Day 11) is with replacement.</p>`},
+
+  {id:"l3-cond", day:3, title:"3. Conditional probability and independence in data",
+   body:R`<p>\(P(A \mid B)\) means: <b>shrink the world to only the cases where B happened</b>, then ask what fraction of those are A.</p>
+<p>In pandas, the condition is a filter:</p>
+<pre><code>df.survived.mean()                        # P(survived)          = 0.384
+df[df.sex == "female"].survived.mean()    # P(survived | female) = 0.742
+df[df.sex == "male"].survived.mean()      # P(survived | male)   = 0.189</code></pre>
+<p>Since P(survived | female) ≠ P(survived), survival and sex are <b>dependent</b>, so sex is a useful feature. A feature is useful exactly when the target depends on it. If P(target | feature value) were the same for every value, the feature would carry no information.</p>
+<div class="warn">\(P(A \mid B) \ne P(B \mid A)\). P(positive test | disease) = 0.99 is very different from P(disease | positive test) = 0.17. Confusing the two is called the <b>prosecutor's fallacy</b>.</div>`},
+
+  {id:"l3-bayes", day:3, title:"4. Bayes' theorem, step by step, with 10,000 people",
+   body:R`\[P(A \mid B) = \frac{P(B \mid A)\,P(A)}{P(B)}\]
+<p>Problem: 1% of people have a disease. The test catches 99% of sick people (sensitivity) and wrongly flags 5% of healthy people (false-positive rate). You test positive. How likely are you to be sick?</p>
+<p>Imagine <b>10,000 people</b>:</p>
+<table><tr><th></th><th>Test positive</th><th>Test negative</th><th>Total</th></tr>
+<tr><td>Sick (1%)</td><td>99</td><td>1</td><td>100</td></tr>
+<tr><td>Healthy (99%)</td><td>495</td><td>9,405</td><td>9,900</td></tr>
+<tr><td>Total</td><td><b>594</b></td><td>9,406</td><td>10,000</td></tr></table>
+<p>Of the 594 positives, only 99 are sick: 99 / 594 = <b>16.7%</b>. The 5% false alarms on a huge healthy group swamp the true positives from a tiny sick group. This is the <b>base-rate fallacy</b>: ignoring how rare the condition is to begin with.</p>
+<h4>The four parts</h4>
+<ul><li><b>Prior</b> P(sick) = 0.01: what you believed before the test.</li>
+<li><b>Likelihood</b> P(positive | sick) = 0.99: how well the evidence fits the hypothesis.</li>
+<li><b>Evidence</b> P(positive) = 0.0594: all the ways to test positive (law of total probability).</li>
+<li><b>Posterior</b> P(sick | positive) = 0.167: the updated belief. A second positive test would use 0.167 as the new prior → 0.80.</li></ul>
+<div class="tip">This is exactly the precision problem in ML. With rare classes (fraud, disease), even a model with high recall produces mostly false alarms. That's why accuracy alone is misleading on imbalanced data.</div>`},
+
+  {id:"l3-rv", day:3, title:"5. Random variables: PMF, PDF, CDF, expectation",
+   body:R`<p>A <b>random variable</b> is a number decided by chance: the roll of a die, the number of spam emails tomorrow, someone's height.</p>
+<table><tr><th></th><th>Discrete</th><th>Continuous</th></tr>
+<tr><td>Values</td><td>countable: 0, 1, 2, …</td><td>any value in a range</td></tr>
+<tr><td>Function</td><td><b>PMF</b>: P(X = x), a real probability</td><td><b>PDF</b>: a density; P(X = exactly x) = 0</td></tr>
+<tr><td>Probabilities</td><td>add PMF values</td><td>area under the PDF</td></tr>
+<tr><td>Examples</td><td>Bernoulli, Binomial, Poisson</td><td>Uniform, Normal, Exponential</td></tr></table>
+<p>The <b>CDF</b> works for both: \(F(x) = P(X \le x)\). It rises from 0 to 1, and any range is a subtraction: \(P(a < X \le b) = F(b) - F(a)\).</p>
+<div class="warn">A PDF value can be greater than 1 (a narrow normal with σ = 0.1 peaks at about 4). Only areas are probabilities.</div>
+<h4>Expectation and variance</h4>
+<p>\(E[X] = \sum x\,P(x)\) is the long-run average. For a die it's 3.5, a value you can never actually roll. \(\operatorname{Var}(X) = E[X^2] - (E[X])^2\) measures spread. Useful rules: \(E[aX + b] = aE[X] + b\), and \(E[X + Y] = E[X] + E[Y]\) <b>always</b> holds, even when X and Y are dependent.</p>
+<pre><code>from scipy import stats
+d = stats.binom(n=10, p=0.5)
+d.pmf(5)   # P(X = 5)   = 0.246
+d.cdf(5)   # P(X ≤ 5)   = 0.623
+d.sf(5)    # P(X &gt; 5)   = 0.377
+d.ppf(.9)  # 90th percentile = 7
+d.mean(), d.var()   # 5.0, 2.5</code></pre>`},
+
+  {id:"l3-dists", day:3, title:"6. The distributions you must know, and when to use each",
+   body:R`<table><tr><th>Distribution</th><th>Story</th><th>Mean</th><th>Variance</th><th>ML example</th></tr>
+<tr><td>Bernoulli(p)</td><td>one yes/no trial</td><td>p</td><td>p(1−p)</td><td>one email is spam or not</td></tr>
+<tr><td>Binomial(n, p)</td><td>successes in n independent trials</td><td>np</td><td>np(1−p)</td><td>clicks out of 200 ad views</td></tr>
+<tr><td>Poisson(λ)</td><td>count of events in an interval</td><td>λ</td><td>λ</td><td>server errors per hour</td></tr>
+<tr><td>Uniform(a, b)</td><td>every value equally likely</td><td>(a+b)/2</td><td>(b−a)²/12</td><td>random weight initialisation</td></tr>
+<tr><td>Normal(μ, σ)</td><td>sum of many small effects</td><td>μ</td><td>σ²</td><td>measurement errors, regression residuals</td></tr></table>
+<h4>How to choose</h4>
+<ul><li>Fixed number of trials, counting successes → <b>Binomial</b>.</li>
+<li>No fixed number of trials, counting events in time or space → <b>Poisson</b>. For large n and small p, the Binomial ≈ Poisson(λ = np).</li>
+<li>Continuous measurement, symmetric bell → <b>Normal</b>. Check with a histogram or Q-Q plot.</li></ul>
+<h4>The normal distribution's rules</h4>
+<p>68% of values lie within 1σ of the mean, 95% within 2σ (more precisely 1.96σ, the basis of 95% confidence intervals) and 99.7% within 3σ. Any normal value converts to the standard normal with \(z = (x - \mu)/\sigma\).</p>
+<p><b>Why it's everywhere</b>: the Central Limit Theorem (Day 4) says averages of many independent values are approximately normal, whatever the original distribution.</p>`},
+
+  {id:"l3-nb", day:3, title:"7. Naive Bayes spam filter, worked by hand",
+   body:R`<p>Training data: four emails.</p>
+<table><tr><th>Email</th><th>Label</th><th>Words kept</th></tr>
+<tr><td>Win a FREE prize!</td><td>spam</td><td>win, free, prize</td></tr>
+<tr><td>Free cash, click now</td><td>spam</td><td>free, cash, click</td></tr>
+<tr><td>Team meeting on Friday</td><td>ham</td><td>team, meeting, friday</td></tr>
+<tr><td>Free lunch for the team</td><td>ham</td><td>free, lunch, team</td></tr></table>
+<p><b>Step 1 – priors</b>: 2 of 4 emails are spam → P(spam) = P(ham) = 0.5.</p>
+<p><b>Step 2 – word counts</b>: spam has 6 words, ham has 6, and the vocabulary has 9 distinct words.</p>
+<p><b>Step 3 – smoothed likelihoods</b> (add 1 to every count, add |V| = 9 to every total): P(free | spam) = (2+1)/(6+9) = 3/15; P(cash | spam) = 2/15; P(free | ham) = 2/15; P(cash | ham) = (0+1)/15 = 1/15.</p>
+<p><b>Step 4 – score a new email</b> "free cash prize":</p>
+\[\text{spam: } 0.5 \times \tfrac{3}{15} \times \tfrac{2}{15} \times \tfrac{2}{15} = 0.00178 \qquad \text{ham: } 0.5 \times \tfrac{2}{15} \times \tfrac{1}{15} \times \tfrac{1}{15} = 0.00030\]
+<p><b>Step 5 – normalise</b>: P(spam | email) = 0.00178 / (0.00178 + 0.00030) = <b>0.857 → SPAM</b>.</p>
+<h4>Why "naive"?</h4>
+<p>It assumes every word is independent of the others once you know the class, so it can just multiply. That's false ("click" and "here" go together), but the classifier still ranks classes well, because it only needs the <b>biggest</b> score to win, not exact probabilities.</p>
+<h4>Two engineering fixes</h4>
+<ul><li><b>Laplace smoothing</b>: without the +1, P(cash | ham) = 0 and any ham email containing "cash" gets a score of exactly 0.</li>
+<li><b>Logs</b>: a long email multiplies hundreds of small numbers, which underflows to 0.0. Add log-probabilities instead; the winner is the same.</li></ul>
+<pre><code>from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+model = make_pipeline(CountVectorizer(), MultinomialNB(alpha=1.0))
+model.fit(texts, labels)
+model.predict_proba(["free cash prize"])</code></pre>`},
+
+  {id:"l3-ml", day:3, title:"8. Where probability shows up in machine learning",
+   body:R`<ul><li><b>Classifier outputs</b> are probabilities: <code>predict_proba</code>. The label is just "probability above a threshold" (0.5 by default). Moving the threshold trades precision for recall.</li>
+<li><b>Training = maximum likelihood</b>: logistic regression picks the weights that make the observed labels most probable. Minimising log loss is the same thing.</li>
+<li><b>Imbalanced classes</b>: the base-rate effect means rare-class predictions need precision/recall, not accuracy.</li>
+<li><b>Calibration</b>: a model saying "90% sure" should be right about 90% of the time. Naive Bayes tends to be overconfident (probabilities pushed to 0 or 1) because its independence assumption double-counts correlated words.</li>
+<li><b>Sampling</b>: train/test splits, bootstrapping, A/B tests and dropout all rest on probability.</li></ul>`},
+
+  // ===================== Project: TextPulse =====================
+  {id:"lp-overview", day:"P", title:"1. The whole pipeline in one picture",
+   body:R`<p><b>Raw data</b> (Sentiment140 1.6M tweets, SMS Spam Collection 5,572, Enron-Spam 33,716 emails) → <b>load and standardise</b> into one table (label, text, source) → <b>clean text</b> → <b>stratified 80/20 split</b> → <b>TF-IDF</b> (fitted on training data only) → train <b>Naive Bayes and Logistic Regression</b> → <b>compare on the test set</b>, keep the better one → <b>save</b> the pipeline with joblib → <b>serve</b> with FastAPI and stream predictions over a WebSocket → <b>dashboard</b>. For the free live site, the models are exported to JSON and run in the browser.</p>
+<table><tr><th>Model</th><th>Test rows</th><th>Naive Bayes</th><th>Logistic Regression (kept)</th></tr>
+<tr><td>Spam (email + SMS)</td><td>7,133</td><td>97.52%</td><td><b>97.95%</b></td></tr>
+<tr><td>Sentiment (tweets)</td><td>320,000</td><td>80.33%</td><td><b>82.30%</b></td></tr></table>`},
+
+  {id:"lp-text", day:"P", title:"2. Text cleaning and TF-IDF features",
+   body:R`<p><b>Cleaning</b>: lowercase; links → the word "url"; @names → "user"; remove HTML tags, digits and punctuation; keep apostrophes ("don't") and small words like "not", because "not good" is the opposite of "good".</p>
+<p><b>Tokens</b>: the pattern <code>[a-z][a-z']+</code> (2+ letters). <b>N-grams (1, 2)</b> adds word pairs, so "not good" and "click here" become features in their own right.</p>
+<p><b>TF-IDF</b> gives each term a weight: high when it's frequent in this message (TF) but rare across messages (IDF). Settings used and why:</p>
+<ul><li><code>min_df=3</code>: ignore terms in fewer than 3 messages (typos, noise; reduces overfitting).</li>
+<li><code>max_features=200,000</code>: cap memory.</li>
+<li><code>sublinear_tf=True</code>: 1 + ln(count), so repetition has diminishing returns.</li>
+<li>L2 normalisation: message length doesn't inflate scores.</li>
+<li>Vocabulary learned from a 300k sample of the <b>training</b> data: fitting on all 1.28M tweets with bigrams would need many GB of RAM, and fitting on test data would leak.</li></ul>
+<div class="tip">Why not word embeddings or BERT? TF-IDF + a linear model is a strong, fast baseline: it trains in seconds to a minute, scores about 38,500 messages per second on one CPU, and every prediction is explainable word by word. A transformer would likely gain a few points on sentiment (sarcasm, context) at a much higher cost.</div>`},
+
+  {id:"lp-models", day:"P", title:"3. Naive Bayes vs Logistic Regression",
+   body:R`<table><tr><th></th><th>Multinomial Naive Bayes</th><th>Logistic Regression</th></tr>
+<tr><td>Type</td><td>generative: models P(words | class)</td><td>discriminative: models P(class | words) directly</td></tr>
+<tr><td>Training</td><td>counting, one pass (0.1 s on spam)</td><td>optimisation (0.9 s spam, 58 s sentiment)</td></tr>
+<tr><td>Assumption</td><td>words independent given the class</td><td>none about word independence</td></tr>
+<tr><td>Strength</td><td>tiny data, very fast</td><td>usually more accurate with enough data; better probabilities</td></tr>
+<tr><td>Settings</td><td>alpha = 0.1 (smoothing)</td><td>C = 4 (weaker L2 regularisation), liblinear solver</td></tr></table>
+<p>Logistic regression won both tasks because correlated words (like "click" and "here") get their weights learned jointly, instead of being counted twice. Both models are <b>linear</b>: score = Σ value × weight + bias, which makes them explainable.</p>`},
+
+  {id:"lp-eval", day:"P", title:"4. Evaluation done honestly",
+   body:R`<ul><li><b>Stratified split</b> keeps the spam/ham ratio identical in train and test, with a fixed seed (42) so results are reproducible.</li>
+<li><b>The test set is never used for any fitting</b>: not the vocabulary, not the IDF, not model selection by peeking.</li>
+<li><b>Spam confusion matrix</b>: TP 2,960, FP 58, FN 88, TN 4,027 → precision 98.1%, recall 97.1%.</li>
+<li><b>Accuracy by source</b>: email 98.4%, SMS 95.1%. SMS is harder: there's less data and the text is short.</li>
+<li><b>Live check</b>: the dashboard replays only held-out messages and compares each prediction with the true label in real time.</li>
+<li><b>Low-confidence flag</b>: below 65% the model is close to guessing, and the UI says so.</li></ul>
+<h4>Known limitations</h4>
+<ul><li>Old data: Enron emails are from 1999–2005 and SMS from about 2011, so modern phishing wording is under-represented.</li>
+<li>Sentiment140 labels came from emoticons (distant supervision), so they're noisy. That's partly why accuracy tops out around 82%.</li>
+<li>Out of domain: the spam model is less sure on tweet-style text.</li></ul>`},
+
+  {id:"lp-serve", day:"P", title:"5. Serving: FastAPI, WebSocket, and the browser engine",
+   body:R`<p><b>FastAPI server</b> (<code>app/main.py</code>): loads both models once at start-up (<code>lifespan</code>), exposes REST endpoints (<code>/api/analyze</code>, <code>/api/status</code>, <code>/api/metrics</code>, stream controls), validates input with Pydantic, and runs an <b>async</b> background loop that classifies the next test message and pushes it to every open dashboard over a <b>WebSocket</b>.</p>
+<p><b>Why a WebSocket?</b> The server pushes results the moment they exist (up to 200/s). Polling a REST endpoint would waste requests and add delay.</p>
+<p><b>The dashboard</b> batches incoming results and redraws once per animation frame, because redrawing for every message at 200/s would freeze the page.</p>
+<p><b>Free live deployment</b>: Hugging Face now charges for server (Docker) Spaces, but static Spaces are free and never sleep. Because logistic regression is just "sum of value × weight + bias, then sigmoid", the vocabulary, IDF values, weights and bias were exported to JSON (gzipped 17 MB → 5 MB), and <code>engine.js</code> repeats the same maths in JavaScript. A verification step confirmed identical labels on 6,000 test messages before export. GitHub Actions redeploys on every push and checks the site daily.</p>`},
+);
+
+const INTERVIEW = [
+  // ===================== Day 1: Python =====================
+  {id:"i1-listtuple", day:1, level:"basic", q:"What's the difference between a list and a tuple? When would you use each?",
+   say:R`A list is mutable and a tuple is immutable. I use a list for a collection that changes, and a tuple for a fixed record, especially as a dictionary key or a function's multiple return values.`,
+   a:R`<ul><li><b>Mutability</b>: <code>lst.append(4)</code> works; a tuple has no append, and <code>t[0] = 1</code> raises TypeError.</li>
+<li><b>Hashable</b>: a tuple of immutable items can be a dict key or set member, e.g. <code>{(12.97, 77.59): "Chennai"}</code>. A list can't.</li>
+<li><b>Intent</b>: a tuple signals "this shape is fixed" (a coordinate, an RGB colour, a (name, score) pair).</li>
+<li><b>Performance</b>: tuples are slightly smaller and faster to create, but that's rarely the reason to choose one.</li></ul>
+<p><b>Follow-up</b>: "Can a tuple change?" Its own slots can't, but if it holds a list, that inner list can still be modified: <code>t = ([1], 2); t[0].append(3)</code> works.</p>`},
+  {id:"i1-mutable", day:1, level:"basic", q:"What are mutable and immutable types? Why does it matter?",
+   say:R`Immutable objects (int, float, str, tuple) can't be changed after creation; operations return new objects. Mutable ones (list, dict, set) change in place, so every name pointing to them sees the change.`,
+   a:R`<pre><code>s = "hi"; s.upper()      # returns "HI"; s is still "hi"
+a = [1, 2]; b = a; b.append(3)   # a is [1, 2, 3]: same object</code></pre>
+<p>It matters for: (1) <b>aliasing bugs</b> when two names share one list; (2) <b>dict keys</b>, which must be immutable (hashable); (3) <b>function arguments</b>: a function can modify a list you pass in, but can't modify an int.</p>`},
+  {id:"i1-args", day:1, level:"basic", q:"Explain *args and **kwargs.",
+   say:R`*args collects extra positional arguments into a tuple; **kwargs collects extra keyword arguments into a dict. They're also used the other way round, to unpack a list or dict into a call.`,
+   a:R`<pre><code>def f(*args, **kwargs): print(args, kwargs)
+f(1, 2, a=3)                      # (1, 2) {'a': 3}
+params = {"C": 4.0, "max_iter": 1000}
+LogisticRegression(**params)      # same as LogisticRegression(C=4.0, max_iter=1000)</code></pre>
+<p>Common uses: wrapper functions and decorators that pass everything through, and building models from config files or hyperparameter grids.</p>`},
+  {id:"i1-self", day:1, level:"basic", q:"What is self, and what does __init__ do?",
+   say:R`__init__ runs when an object is created and sets up its attributes. self is the object the method is working on. Python passes it automatically as the first argument.`,
+   a:R`<p><code>s.add_mark(90)</code> is translated to <code>Student.add_mark(s, 90)</code>, so inside the method <code>self</code> is <code>s</code>. It's the same idea as <code>this</code> in C#, but explicit. <code>__init__</code> isn't technically the constructor (<code>__new__</code> creates the object); it initialises the new object.</p>`},
+  {id:"i1-isvseq", day:1, level:"mid", q:"What's the difference between is and ==?",
+   say:R`== compares values; "is" checks whether two names point to the very same object. Use "is" only for None, True and False.`,
+   a:R`<pre><code>a = [1, 2]; b = [1, 2]
+a == b   # True  (same contents)
+a is b   # False (two different list objects)
+x is None   # the correct way to test for None</code></pre>
+<p>Trap: small integers (−5 to 256) and some strings are cached, so <code>is</code> may accidentally return True for them. Never rely on that.</p>`},
+  {id:"i1-default", day:1, level:"mid", q:"What's wrong with def f(x, items=[])?",
+   say:R`Default values are evaluated once, when the function is defined, so every call shares the same list. Use None as the default and create the list inside the function.`,
+   a:R`<pre><code>def f(x, items=[]): items.append(x); return items
+f(1)  # [1]
+f(2)  # [1, 2]   ← the list survived between calls
+
+def f(x, items=None):
+    if items is None:
+        items = []
+    items.append(x); return items</code></pre>
+<p>The same applies to dict and set defaults, or any mutable object.</p>`},
+  {id:"i1-copy", day:1, level:"mid", q:"Shallow copy vs deep copy?",
+   say:R`A shallow copy creates a new outer container but shares the inner objects. A deep copy recursively copies everything, so the two are fully independent.`,
+   a:R`<pre><code>import copy
+grid = [[1, 2], [3, 4]]
+s = grid.copy()          # or list(grid), grid[:]
+s[0].append(99)          # grid[0] changes too: inner lists are shared
+d = copy.deepcopy(grid)
+d[0].append(7)           # grid is unaffected</code></pre>
+<p>pandas: <code>df.copy()</code> is deep by default for the data. Use it when you take a subset you plan to modify.</p>`},
+  {id:"i1-comp", day:1, level:"mid", q:"List comprehension vs generator expression: when would you use each?",
+   say:R`A list comprehension builds the whole list in memory now; a generator expression produces items one at a time when asked. I use generators for large or streaming data, or when I only need to loop once.`,
+   a:R`<pre><code>sum([x*x for x in range(10**7)])   # builds a 10-million-item list first
+sum(x*x for x in range(10**7))     # constant memory</code></pre>
+<p>Use a list when you need to index it, loop over it more than once, or know its length. A generator is exhausted after one pass.</p>`},
+  {id:"i1-dict", day:1, level:"mid", q:"How does a dictionary work, and what's the time complexity of lookups?",
+   say:R`A dict is a hash table: Python hashes the key to find a slot, so lookup, insert and delete are O(1) on average. That's why keys must be hashable (immutable).`,
+   a:R`<p>Worst case is O(n) when many keys collide, but that's rare. Since Python 3.7, dicts keep insertion order. Practical takeaway: for membership tests on large data, convert a list to a set first. <code>x in big_list</code> is O(n) per check; <code>x in big_set</code> is O(1).</p>`},
+  {id:"i1-except", day:1, level:"mid", q:"How do you handle errors well in Python?",
+   say:R`Catch specific exceptions where I can actually handle them, let unexpected ones surface, clean up with finally or a with-block, and raise clear errors early when input is invalid.`,
+   a:R`<ul><li>Avoid a bare <code>except:</code>. It also catches KeyboardInterrupt and hides bugs.</li>
+<li>Use <code>with</code> for files, connections and locks.</li>
+<li>Validate at boundaries: <code>if not 0 &lt;= mark &lt;= 100: raise ValueError(...)</code>.</li>
+<li>Log the exception with context (<code>logger.exception(...)</code>) instead of printing.</li>
+<li>Python style is EAFP ("easier to ask forgiveness than permission"): try the operation and handle the failure, rather than checking every condition first.</li></ul>`},
+  {id:"i1-gil", day:1, level:"adv", q:"What is the GIL? Does it hurt machine-learning code?",
+   say:R`The Global Interpreter Lock lets only one thread execute Python bytecode at a time. It limits CPU-bound pure-Python threading, but NumPy, pandas and scikit-learn do the heavy work in C, which releases the GIL, so ML code is mostly unaffected.`,
+   a:R`<ul><li><b>I/O-bound</b> work (web calls, file reads): threads or <code>asyncio</code> work well, because the GIL is released while waiting.</li>
+<li><b>CPU-bound pure Python</b>: use <code>multiprocessing</code> (separate processes, each with its own GIL) or vectorise with NumPy.</li>
+<li>scikit-learn's <code>n_jobs=-1</code> runs in parallel using processes or C-level threads.</li>
+<li>Python 3.13 added an experimental free-threaded build without the GIL.</li></ul>`},
+  {id:"i1-decorator", day:1, level:"adv", q:"What is a decorator? Give an example.",
+   say:R`A decorator is a function that takes a function and returns a new function that wraps it, adding behaviour like timing, logging, caching or access checks without changing the original code.`,
+   a:R`<pre><code>import time, functools
+def timed(fn):
+    @functools.wraps(fn)                  # keep the original name and docstring
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = fn(*args, **kwargs)
+        print(f"{fn.__name__} took {time.perf_counter() - start:.3f}s")
+        return result
+    return wrapper
+
+@timed
+def train(): ...</code></pre>
+<p>You've used them already: <code>@property</code>, <code>@dataclass</code>, <code>@functools.lru_cache</code>, and FastAPI's <code>@app.get("/api/status")</code>, which is like an attribute route in ASP.NET.</p>`},
+  {id:"i1-duck", day:1, level:"adv", q:"What is duck typing? How does scikit-learn use it?",
+   say:R`"If it walks like a duck…": Python cares whether an object has the methods you call, not what class it is. scikit-learn relies on this: anything with fit and transform can go in a Pipeline.`,
+   a:R`<p>Every estimator follows the same interface: <code>fit(X, y)</code>, <code>predict(X)</code>, <code>transform(X)</code>, <code>get_params()</code>. That's why you can swap <code>MultinomialNB()</code> for <code>LogisticRegression()</code> without changing the rest of the code, and why <code>GridSearchCV</code> works on any model. In C# you'd define an interface; in Python the shared methods are the contract.</p>`},
+
+  // ===================== Day 2: NumPy, Pandas, EDA =====================
+  {id:"i2-numpyfast", day:2, level:"basic", q:"Why is NumPy faster than Python lists?",
+   say:R`NumPy stores numbers of one type in a contiguous block of memory and runs operations in compiled C over the whole array at once (vectorisation). A list holds pointers to separate Python objects, and each operation goes through the interpreter.`,
+   a:R`<p>Three reasons: <b>no per-element type checks</b> (one dtype), <b>cache-friendly contiguous memory</b>, and <b>loops in C or SIMD instructions</b> instead of Python bytecode. Typical speed-up is 10–100×. It also uses less memory: a float64 is 8 bytes in NumPy versus about 24 bytes as a Python float object, plus an 8-byte pointer in the list.</p>`},
+  {id:"i2-lociloc", day:2, level:"basic", q:"loc vs iloc?",
+   say:R`loc selects by label (index values and column names) and also takes boolean conditions; iloc selects by integer position. loc slices include the end, iloc slices don't.`,
+   a:R`<pre><code>df.loc[5, "age"]          # the row whose index LABEL is 5
+df.iloc[5, 2]             # the 6th row, 3rd column
+df.loc[df.age &lt; 12, ["name", "survived"]]
+df.loc[0:3]   # 4 rows (labels 0, 1, 2, 3)   df.iloc[0:3]   # 3 rows</code></pre>
+<p>After filtering or sorting, labels and positions no longer match, which is when mixing them up causes bugs.</p>`},
+  {id:"i2-eda", day:2, level:"basic", q:"What is EDA and how do you approach a new dataset?",
+   say:R`Exploratory Data Analysis is understanding the data before modelling: its structure, quality, the target, and the relationships. I follow a fixed order: inspect, missing values, target, one variable at a time, pairs, then features.`,
+   a:R`<ol><li>Shape, types, <code>head</code>, <code>info</code>, <code>describe</code>.</li>
+<li>Missing values and duplicates; impossible values.</li>
+<li>Target distribution → baseline and class imbalance.</li>
+<li>Univariate: histograms for numbers, counts for categories, skew and outliers.</li>
+<li>Bivariate: each feature against the target (rates by group, box plots).</li>
+<li>Multivariate: pivots and correlations.</li>
+<li>Check for leakage, then engineer features.</li></ol>
+<p>On Titanic this showed a 38% survival rate, sex and class as the strongest signals, 77% missing deck, skewed fares, and a leaking <code>alive</code> column.</p>`},
+  {id:"i2-std", day:2, level:"basic", q:"Population vs sample standard deviation: why n − 1?",
+   say:R`With a sample, I measure distances from the sample mean, which is always closer to the data than the true mean, so the spread comes out too small. Dividing by n − 1 (Bessel's correction) fixes that bias.`,
+   a:R`<p>Practical trap: <code>np.std(x)</code> defaults to <code>ddof=0</code> (divide by n), while pandas <code>Series.std()</code> defaults to <code>ddof=1</code> (n − 1). For 2, 4, 4, 4, 5, 5, 7, 9 you get 2.0 vs 2.138. With large n the difference is negligible.</p>`},
+  {id:"i2-axis", day:2, level:"mid", q:"Explain axis=0 vs axis=1.",
+   say:R`The axis you name is the one that gets collapsed. axis=0 works down the rows and gives one result per column; axis=1 works across the columns and gives one result per row.`,
+   a:R`<pre><code>m.shape            # (3 students, 2 subjects)
+m.mean(axis=0)     # shape (2,): average per subject
+m.mean(axis=1)     # shape (3,): average per student
+df.drop("age", axis=1)   # removes a column</code></pre>`},
+  {id:"i2-broadcast", day:2, level:"mid", q:"What is broadcasting? What are the rules?",
+   say:R`Broadcasting lets NumPy do arithmetic on arrays of different shapes by virtually stretching dimensions of size 1. Shapes are compared from the right; each pair must be equal or one of them must be 1.`,
+   a:R`<pre><code>X.shape = (1000, 5); mu.shape = (5,)  → X - mu works (row subtracted from every row)
+(1000, 5) and (1000,)  → error; reshape to (1000, 1) first: v[:, None]</code></pre>
+<p>No data is copied, so it's fast and memory-efficient. Standardising a feature matrix in one line, <code>(X - X.mean(0)) / X.std(0)</code>, relies on it.</p>`},
+  {id:"i2-missing", day:2, level:"mid", q:"How do you handle missing values?",
+   say:R`First I find out why they're missing and how many. Then per column: drop it if mostly missing, impute by median or group median for numbers or the mode for categories, add a "was missing" flag when missingness might be informative, and fit any imputation on training data only.`,
+   a:R`<ul><li><b>MCAR</b> (missing completely at random) → simple imputation is fine.</li>
+<li><b>MAR</b> (depends on other columns, e.g. age missing more in 3rd class) → impute using those columns (group median, KNN or iterative imputer).</li>
+<li><b>MNAR</b> (depends on the missing value itself, e.g. high earners hiding income) → the flag is essential; imputation alone biases results.</li></ul>
+<p>Use the median over the mean for skewed data. Tree models like LightGBM can handle NaN natively. Use <code>SimpleImputer</code> inside a <code>Pipeline</code> so it's fitted only on training folds.</p>`},
+  {id:"i2-merge", day:2, level:"mid", q:"merge vs join vs concat in pandas?",
+   say:R`merge is a SQL-style join on columns; join is a shortcut that joins on the index; concat stacks DataFrames vertically (like UNION ALL) or side by side.`,
+   a:R`<pre><code>orders.merge(customers, on="customer_id", how="left")
+df1.join(df2)                 # on the index
+pd.concat([jan, feb])         # more rows
+pd.concat([X, dummies], axis=1)   # more columns</code></pre>
+<p>Always check row counts after a merge: duplicate keys on the right side multiply rows. <code>validate="many_to_one"</code> catches that.</p>`},
+  {id:"i2-aggtrans", day:2, level:"mid", q:"groupby().agg() vs groupby().transform()?",
+   say:R`agg returns one row per group, a summary; transform returns a result the same length as the original data, so I can add it back as a column.`,
+   a:R`<pre><code>df.groupby("pclass")["fare"].agg(["mean", "count"])          # 3 rows
+df["class_avg_fare"] = df.groupby("pclass")["fare"].transform("mean")   # 891 rows
+df["fare_vs_class"] = df.fare / df.class_avg_fare</code></pre>
+<p>transform is how you do group-wise imputation and "compared to my group" features.</p>`},
+  {id:"i2-outlier", day:2, level:"mid", q:"How do you detect and treat outliers?",
+   say:R`Detect with box plots or the IQR rule for skewed data, and z-scores for roughly normal data. Then decide based on cause: fix or remove errors, but keep genuine extremes, perhaps capped or log-transformed.`,
+   a:R`<ul><li>IQR rule: outside Q1 − 1.5·IQR to Q3 + 1.5·IQR.</li>
+<li>z-score: |z| &gt; 3. It's weak on skewed data because outliers inflate σ itself.</li>
+<li>Treatments: correct data-entry errors; cap (winsorize); log-transform; use robust models (trees) or losses (Huber).</li>
+<li>Never remove outliers blindly. In fraud detection, the outliers are the target.</li></ul>`},
+  {id:"i2-leak", day:2, level:"adv", q:"What is data leakage? Give examples.",
+   say:R`Leakage is when training uses information that wouldn't be available at prediction time, so validation scores look great but the model fails in production.`,
+   a:R`<ul><li><b>Target leakage</b>: a feature that encodes the answer. Titanic's <code>alive</code> column; "refund_issued" when predicting fraud.</li>
+<li><b>Train–test contamination</b>: scaling, imputing or fitting a vocabulary on the full dataset before splitting. TextPulse fits its TF-IDF vocabulary on training data only for this reason.</li>
+<li><b>Time leakage</b>: random splits on time-series data, so the model "sees the future". Split by date instead.</li>
+<li><b>Duplicate leakage</b>: the same customer in both train and test. Use GroupKFold.</li></ul>
+<p>Red flag: a suspiciously high score. Fix: put all preprocessing in a Pipeline, and ask "would I know this at prediction time?" for every feature.</p>`},
+  {id:"i2-corr", day:2, level:"adv", q:"Correlation vs causation; Pearson vs Spearman?",
+   say:R`Correlation only means two variables move together; causation needs a mechanism or a controlled experiment, because a third variable can drive both. Pearson measures linear relationships; Spearman ranks the data first, so it captures any monotonic relationship and is robust to outliers.`,
+   a:R`<p>Example: ice-cream sales and drownings correlate because summer drives both. On Titanic, fare and survival correlate, but class drives both.</p>
+<p>Pearson r = 0 doesn't mean "no relationship": y = x² has r = 0. Neither works for categorical variables; use group rates, chi-square or Cramér's V for those.</p>`},
+  {id:"i2-perf", day:2, level:"adv", q:"Your pandas code is slow on 10 million rows. What do you do?",
+   say:R`Replace apply and row loops with vectorised operations, shrink dtypes, load only the columns I need, and process in chunks or move to a faster engine if it still doesn't fit.`,
+   a:R`<ul><li>Vectorise: <code>np.where</code>, arithmetic on columns, <code>.str</code> and <code>.dt</code> accessors instead of <code>.apply(lambda ...)</code>.</li>
+<li>Memory: <code>category</code> for repeated strings, <code>float32</code>/<code>int32</code> where precision allows, <code>usecols=</code> in <code>read_csv</code>.</li>
+<li>Chunks: <code>pd.read_csv(..., chunksize=500_000)</code>.</li>
+<li>Formats: Parquet instead of CSV (columnar, compressed, typed).</li>
+<li>Engines: Polars or DuckDB for single-machine speed; Spark for clusters.</li></ul>`},
+
+  // ===================== Day 3: Probability =====================
+  {id:"i3-cond", day:3, level:"basic", q:"What is conditional probability? Give a data example.",
+   say:R`P(A | B) is the probability of A once we know B happened: P(A and B) divided by P(B). In data, it's just filtering to the rows where B is true and measuring A.`,
+   a:R`<p>Titanic: P(survived) = 0.38, but P(survived | female) = 233/314 = 0.74. In pandas, <code>df[df.sex == "female"].survived.mean()</code>. Every groupby-mean is a table of conditional probabilities.</p>`},
+  {id:"i3-indep", day:3, level:"basic", q:"Independent vs mutually exclusive events?",
+   say:R`Independent means one event doesn't change the other's probability, so P(A and B) = P(A)·P(B). Mutually exclusive means they can't both happen, so P(A and B) = 0. Mutually exclusive events with non-zero probabilities are actually dependent.`,
+   a:R`<p>Two separate coin flips are independent. "Rolled a 1" and "rolled a 6" on one roll are mutually exclusive: knowing one happened tells you the other didn't, which is the opposite of independence.</p>`},
+  {id:"i3-normal", day:3, level:"basic", q:"Describe the normal distribution and the 68–95–99.7 rule.",
+   say:R`A symmetric bell curve described by its mean and standard deviation. About 68% of values fall within one σ of the mean, 95% within two, and 99.7% within three.`,
+   a:R`<p>It appears whenever many small independent effects add up, and averages of large samples are approximately normal by the Central Limit Theorem. Uses: z-scores, confidence intervals (±1.96σ for 95%), and the assumptions behind linear regression residuals and t-tests. Real data with heavy tails, like financial returns, isn't normal, so check with a histogram or Q-Q plot.</p>`},
+  {id:"i3-bayes", day:3, level:"mid", q:"Explain Bayes' theorem with an example.",
+   say:R`Bayes updates a prior belief with evidence: posterior = likelihood × prior ÷ evidence. Classic example: a 99%-sensitive test with 5% false positives for a disease 1% of people have. A positive result means only about a 17% chance of having the disease.`,
+   a:R`<p>Out of 10,000 people, 100 are sick and 99 of them test positive; 9,900 are healthy and 495 test positive (5%). So 99 of 594 positives are sick: <b>16.7%</b>.</p>
+<p>Why it matters in ML: it's the basis of Naive Bayes, and it explains why rare-class problems (fraud, disease) have low precision even with good models. Always state the base rate.</p>`},
+  {id:"i3-pdf", day:3, level:"mid", q:"PMF vs PDF vs CDF?",
+   say:R`A PMF gives actual probabilities for discrete values. A PDF gives density for continuous values; probabilities are areas under it, and any single point has probability zero. The CDF gives P(X ≤ x) for either kind and is the easiest way to get range probabilities.`,
+   a:R`<p>A PDF can exceed 1 (density, not probability). P(a &lt; X ≤ b) = F(b) − F(a). In scipy: <code>.pmf / .pdf</code>, <code>.cdf</code>, <code>.sf</code> (= 1 − cdf) and <code>.ppf</code> (inverse CDF, for percentiles).</p>`},
+  {id:"i3-binpois", day:3, level:"mid", q:"Binomial vs Poisson: when do you use each?",
+   say:R`Binomial counts successes in a fixed number n of independent trials with the same probability p. Poisson counts events in a time or space interval with no fixed maximum, given an average rate λ.`,
+   a:R`<p>Binomial: 7 conversions out of 200 visitors. Poisson: 3 server errors per hour. For large n and small p, Binomial(n, p) ≈ Poisson(np). A Poisson's mean equals its variance; if real counts have a much larger variance (overdispersion), use a negative binomial model instead.</p>`},
+  {id:"i3-naive", day:3, level:"mid", q:"Why is Naive Bayes called naive, and why does it still work?",
+   say:R`It assumes features are independent given the class, which is almost never true for words. It still works because classification only needs the right class to have the highest score, not accurate probabilities, and the errors from the assumption often affect all classes similarly.`,
+   a:R`<p>Strengths: trains in one pass, handles huge vocabularies, needs little data, and is a strong text baseline. Weaknesses: correlated features are double-counted, so probabilities are overconfident (poorly calibrated), and it's usually beaten by logistic regression with enough data. That matches TextPulse: NB 80.3% vs LR 82.3% on sentiment.</p>`},
+  {id:"i3-laplace", day:3, level:"mid", q:"What is Laplace smoothing and why is it needed?",
+   say:R`It adds a small count (1, or alpha) to every word in every class, so a word never seen with a class gets a small probability instead of zero. Without it, one unseen word makes the whole product zero.`,
+   a:R`<p>Formula: (count + α) / (total + α·|V|). In scikit-learn it's <code>MultinomialNB(alpha=...)</code>, tuned like any hyperparameter: TextPulse used 0.1. Larger α means stronger smoothing, pulling probabilities toward uniform.</p>`},
+  {id:"i3-log", day:3, level:"mid", q:"Why do we work with log probabilities?",
+   say:R`Multiplying hundreds of small probabilities underflows to 0.0 in floating point. Taking logs turns the product into a sum of manageable negative numbers, and because log is increasing, the class with the highest log score is still the winner.`,
+   a:R`<p>(10⁻⁵)¹⁰⁰ is 0.0 in float64, but its log is −1151.3. Logs also turn products into sums, which makes optimisation easier: maximising log-likelihood is how logistic regression and neural networks are trained.</p>`},
+  {id:"i3-baserate", day:3, level:"adv", q:"A fraud model has 99% recall and a 1% false-positive rate. Fraud is 0.1% of transactions. Is it good?",
+   say:R`Apply Bayes. Per million transactions: 1,000 frauds, of which 990 are caught; 999,000 legitimate, of which 9,990 are flagged. Precision is 990 / 10,980 ≈ 9%, so about 10 false alarms per real fraud. Whether that's acceptable depends on the cost of reviewing an alert versus the cost of a missed fraud.`,
+   a:R`<p>This tests whether you think in base rates. Ways to improve it: raise the threshold (fewer alerts, lower recall), add a second-stage model for flagged cases, or report precision–recall curves and PR-AUC instead of accuracy (which here would be about 99%, and meaningless).</p>`},
+  {id:"i3-expect", day:3, level:"adv", q:"On average, how many rolls of a fair die does it take to get a six?",
+   say:R`6. The number of trials until the first success is geometric, with mean 1/p, and here p = 1/6.`,
+   a:R`<p>Derivation: let E be the expected number. Roll once; with probability 1/6 you're done, otherwise you're back where you started: E = 1 + (5/6)E → E = 6. The "condition on the first step" trick solves many interview puzzles.</p>`},
+  {id:"i3-montyhall", day:3, level:"adv", q:"Monty Hall: three doors, one car. You pick a door, the host opens another with a goat. Should you switch?",
+   say:R`Yes. Switching wins with probability 2/3. Your first pick is right 1/3 of the time; the host's choice isn't random, because he always reveals a goat, so the remaining 2/3 moves to the other closed door.`,
+   a:R`<p>Check by listing cases: if your first pick is the car (1/3), switching loses; if it's a goat (2/3), the host must reveal the other goat, and switching wins. You can confirm with a 10-line simulation, which is also a good answer to give.</p>`},
+  {id:"i3-birthday", day:3, level:"adv", q:"How many people do you need for a 50% chance that two share a birthday?",
+   say:R`23. Use the complement: P(all different) = 365/365 × 364/365 × … × 343/365 ≈ 0.493, so P(at least one shared) ≈ 0.507.`,
+   a:R`<p>It's surprisingly low because there are 23 × 22 / 2 = 253 pairs of people. The same idea explains hash collisions, and why random IDs need many bits.</p>`},
+];
+
+INTERVIEW.push(
+  // ===================== Project: TextPulse =====================
+  {id:"ip-walk", day:"P", level:"basic", q:"Walk me through your TextPulse project.",
+   say:R`TextPulse is a real-time text classification system. I trained a spam detector on 35,000 emails and SMS and a sentiment model on 1.6 million tweets, using TF-IDF features with Naive Bayes and Logistic Regression. Logistic Regression won: 97.95% and 82.3% accuracy on held-out data. A FastAPI server streams unseen test messages through the models over a WebSocket to a live dashboard that shows each prediction, the words behind it, and running accuracy. It's deployed for free on Hugging Face with GitHub Actions CI/CD.`,
+   a:R`<p>Structure it as <b>problem → data → approach → results → engineering → what I'd improve</b>, in about two minutes:</p>
+<ol><li><b>Problem</b>: show end-to-end ML: from raw public data to a live, explainable product.</li>
+<li><b>Data</b>: Sentiment140, SMS Spam Collection, Enron-Spam: 1.64M records in total.</li>
+<li><b>Approach</b>: text cleaning, TF-IDF with word pairs, two algorithms compared, stratified split, test set never touched during fitting.</li>
+<li><b>Results</b>: spam 97.95% accuracy (precision 98.1%, recall 97.1%); sentiment 82.3%; about 38,500 messages per second in bulk.</li>
+<li><b>Engineering</b>: FastAPI, WebSockets, async streaming, pytest, CI/CD, and a browser engine for free hosting.</li>
+<li><b>Next</b>: a transformer model for sentiment, drift monitoring, and newer spam data.</li></ol>`},
+  {id:"ip-tfidf", day:"P", level:"basic", q:"What is TF-IDF and why did you use it?",
+   say:R`TF-IDF turns text into numbers: a word scores high if it's frequent in this message but rare across all messages. I used it because it's fast, works very well with linear models for text classification, and keeps predictions explainable word by word.`,
+   a:R`<p>TF = 1 + ln(count) (sublinear), IDF = ln((1 + N)/(1 + df)) + 1, then each vector is scaled to length 1. Word pairs (bigrams) capture phrases like "not good" and "click here". <code>min_df=3</code> drops rare noise. Compared with plain counts, IDF down-weights words that appear everywhere ("the", "is").</p>`},
+  {id:"ip-lrnb", day:"P", level:"mid", q:"Why did Logistic Regression beat Naive Bayes?",
+   say:R`Naive Bayes assumes words are independent, so correlated words like "click" and "here" get counted twice. Logistic Regression learns all the weights together, so it accounts for overlap. With plenty of data, the discriminative model usually wins: 82.3% vs 80.3% on sentiment, and 97.95% vs 97.52% on spam.`,
+   a:R`<p>Trade-offs to mention: NB trained in 3 seconds vs 58 seconds for LR on 1.28M tweets, and NB had slightly higher spam recall (97.5% vs 97.1%) but lower precision. I chose by accuracy and F1 on the held-out set, chosen in advance. The model selection was automatic in the training script.</p>`},
+  {id:"ip-eval", day:"P", level:"mid", q:"How do you know 97.95% is real and not overfitting or leakage?",
+   say:R`The test set was split off first with a stratified split and never used for fitting anything, including the TF-IDF vocabulary. The dashboard replays only those held-out messages and checks every prediction against the true label live. I also broke accuracy down by source: email 98.4%, SMS 95.1%.`,
+   a:R`<ul><li>Regularisation (C = 4) and <code>min_df=3</code> limit overfitting to rare words.</li>
+<li>The train vs test gap is small.</li>
+<li>Spam data is fairly balanced (43% spam), so accuracy is meaningful, but I also report precision, recall and the confusion matrix.</li>
+<li>Honest caveat: the data is old (Enron 1999–2005), so accuracy on today's phishing would be lower. A fresh, time-based test set would be the next check.</li></ul>`},
+  {id:"ip-explain", day:"P", level:"mid", q:"How does your model explain its predictions?",
+   say:R`Both models are linear, so the score is the sum of each word's TF-IDF value times its learned weight, plus a bias. I show the words with the biggest contributions toward the predicted label. That's an exact explanation, not an approximation like SHAP or LIME.`,
+   a:R`<p>Example: the phishing sample "URGENT: your account has been suspended…" scores spam at 87%, driven by "your" (+0.95), "account", "url" and "urgent". Explanations like this also reveal weaknesses: "your" being the top spam word shows the model learned style patterns from old emails.</p>`},
+  {id:"ip-realtime", day:"P", level:"mid", q:"How does the real-time part work?",
+   say:R`FastAPI starts an async background task that takes the next unseen message, classifies it in well under a millisecond, updates the counters, and pushes the result to every connected dashboard over a WebSocket. The browser batches updates and redraws once per animation frame, so it stays smooth at 200 messages per second.`,
+   a:R`<p>Why a WebSocket and not polling: the server pushes as soon as there's data, with one connection instead of hundreds of requests. Why async: one process can serve many dashboards while the stream loop runs. New visitors get the last 60 seconds of chart history from <code>/api/status</code>, so charts aren't empty after a refresh.</p>`},
+  {id:"ip-deploy", day:"P", level:"mid", q:"How is it deployed? What happens when you push code?",
+   say:R`GitHub Actions builds the site and uploads it to a Hugging Face static Space whenever the dashboard or model files change, and a daily workflow checks that the site is up. Because server Spaces now need a paid plan, I exported the models to JSON and run the same maths in the browser, after verifying it gives identical results to scikit-learn.`,
+   a:R`<p>Details: the Hugging Face token is stored as an encrypted GitHub secret; files are gzipped (17 MB → 5 MB) and decompressed in the browser with <code>DecompressionStream</code>; and the verification step refuses to export if fewer than 99.9% of labels match (the actual result was 100% on 6,000 messages). Locally, the same dashboard talks to the FastAPI server, because a small <code>api</code> layer in app.js picks the backend.</p>`},
+  {id:"ip-scale", day:"P", level:"adv", q:"How would you scale this to millions of messages per second in production?",
+   say:R`Put messages on a queue like Kafka, run many stateless prediction workers that consume and score in batches, scale them horizontally, write results to a store, and serve the dashboard from aggregated metrics rather than individual events.`,
+   a:R`<ul><li>Batching: vectorising 1,000 messages at once is far faster than one at a time (bulk scoring already reached about 38,500/s on one CPU).</li>
+<li>Stateless workers in containers behind autoscaling (Kubernetes, Azure Container Apps).</li>
+<li>Model loaded once per worker; versioned in a model registry.</li>
+<li>Pre-aggregate metrics per second; WebSocket fan-out through Redis pub/sub.</li>
+<li>Monitoring: latency, throughput, prediction distribution and data drift.</li></ul>`},
+  {id:"ip-improve", day:"P", level:"adv", q:"What are the limitations and what would you improve?",
+   say:R`The data is old and the sentiment labels come from emoticons, so they're noisy. Bag-of-words can't understand sarcasm or word order beyond pairs. I'd add a fine-tuned transformer like DistilBERT for sentiment, collect recent phishing data, tune the decision threshold to the cost of errors, and add drift monitoring with periodic retraining.`,
+   a:R`<ul><li>Hyperparameter search (C, n-gram range, min_df) with cross-validation on the training data.</li>
+<li>Calibrate probabilities (<code>CalibratedClassifierCV</code>) if downstream decisions use the scores.</li>
+<li>Separate spam models per channel (SMS accuracy is lower: 95.1%).</li>
+<li>Human feedback loop: let users correct predictions and use those as new training data.</li></ul>`},
+  {id:"ip-imbalance", day:"P", level:"adv", q:"What would change if spam were only 1% of messages?",
+   say:R`Accuracy would become misleading, since predicting "ham" always would score 99%. I'd focus on precision, recall and PR-AUC, use class weights or resampling during training, and choose the decision threshold based on the business cost of false alarms versus missed spam.`,
+   a:R`<p>Same base-rate logic as Bayes on Day 3: with rare positives, even a small false-positive rate creates many false alarms. Options: <code>LogisticRegression(class_weight="balanced")</code>, threshold tuning on a validation set, and stratified cross-validation so every fold contains positives.</p>`},
+);
+
+
+// ---------- state (per-viewer conveniences only) ----------
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+let done = new Set(load("ml-sticky-done", []));
+let ready = new Set(load("ml-interview-ready", []));
+let view = (location.hash.slice(1) in SUBS) ? location.hash.slice(1) : load("ml-view", "sticky");
+let activeDay = "all", activeType = "all", activeLevel = "all", query = "", hideDone = false, hideReady = false;
 const tilts = [-1.4, .9, -.6, 1.3, -1, .5, 1.1, -.8];
+const $ = id => document.getElementById(id);
+const dayColor = d => `var(--d${d})`;
+const dayLabel = d => d === "P" ? "Project" : `Day ${d}`;
+const textOf = html => html.replace(/<[^>]+>/g, " ");
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
 function chip(container, value, label, isActive, onClick, color){
   const b = document.createElement("button");
   b.className = "chip"; b.type = "button";
   b.setAttribute("aria-pressed", isActive ? "true" : "false");
-  b.innerHTML = (color ? `<span class="dot" style="background:var(${color})"></span>` : "") + label;
+  b.innerHTML = (color ? `<span class="dot" style="background:${color}"></span>` : "") + label;
   b.addEventListener("click", () => onClick(value));
   container.appendChild(b);
 }
 function renderChips(){
-  const dc = document.getElementById("dayChips"); dc.innerHTML = "";
-  chip(dc, "all", "All days", activeDay === "all", v => { activeDay = v; render(); });
-  Object.entries(DAYS).forEach(([d, l]) => chip(dc, d, l, activeDay === d, v => { activeDay = v; render(); }));
-  const tc = document.getElementById("typeChips"); tc.innerHTML = "";
+  const dc = $("dayChips"); dc.innerHTML = "";
+  chip(dc, "all", "All", activeDay === "all", v => { activeDay = v; render(); });
+  Object.entries(DAYS).forEach(([d, l]) => chip(dc, d, l, activeDay === d, v => { activeDay = v; render(); }, dayColor(d)));
+  const tc = $("typeChips"); tc.innerHTML = "";
   chip(tc, "all", "All types", activeType === "all", v => { activeType = v; render(); });
-  Object.entries(TYPES).forEach(([t, o]) => chip(tc, t, o.label, activeType === t, v => { activeType = v; render(); }, `--n-${t}`));
+  Object.entries(TYPES).forEach(([t, o]) => chip(tc, t, o.label, activeType === t, v => { activeType = v; render(); }, `var(--n-${t})`));
+  const lc = $("levelChips"); lc.innerHTML = "";
+  chip(lc, "all", "All levels", activeLevel === "all", v => { activeLevel = v; render(); });
+  Object.entries(LEVELS).forEach(([k, l]) => chip(lc, k, l, activeLevel === k, v => { activeLevel = v; render(); }, `var(--lv-${k})`));
 }
-function render(){
-  renderChips();
-  const board = document.getElementById("board"); board.innerHTML = "";
+const matches = (item, fields) => {
   const q = query.trim().toLowerCase();
-  const list = NOTES.filter(n =>
-    (activeDay === "all" || String(n.day) === activeDay) &&
-    (activeType === "all" || n.type === activeType) &&
-    (!hideDone || !done.has(n.id)) &&
-    (!q || (n.title + " " + n.body).toLowerCase().includes(q)));
+  return (activeDay === "all" || String(item.day) === activeDay) && (!q || textOf(fields.join(" ")).toLowerCase().includes(q));
+};
+function groupByDay(list, build){
+  const out = document.createDocumentFragment();
+  Object.keys(DAYS).forEach(d => {
+    const items = list.filter(i => String(i.day) === d);
+    if (!items.length) return;
+    const h = document.createElement("div");
+    h.className = "day-head";
+    h.innerHTML = `<span class="bar" style="background:${dayColor(d)}"></span><h2>${dayLabel(d)}: ${DAY_TITLES[d]}</h2><span>${items.length}</span>`;
+    out.appendChild(h);
+    out.appendChild(build(items));
+  });
+  return out;
+}
+function typeset(el){
+  if (window.katex) {
+    el.querySelectorAll("[data-tex]").forEach(t => { try { katex.render(t.dataset.tex, t, {displayMode:true, throwOnError:false}); } catch(e){} });
+  }
+  if (window.renderMathInElement) {
+    renderMathInElement(el, {delimiters:[{left:"\\[", right:"\\]", display:true}, {left:"\\(", right:"\\)", display:false}], throwOnError:false});
+  }
+}
+
+// ---------- views ----------
+function renderSticky(out){
+  const list = NOTES.filter(n => matches(n, [n.title, n.body]) && (activeType === "all" || n.type === activeType) && (!hideDone || !done.has(n.id)));
+  const board = document.createElement("div"); board.className = "board";
   list.forEach((n, i) => {
     const el = document.createElement("article");
     el.className = `note ${n.type}` + (done.has(n.id) ? " done" : "");
     el.style.setProperty("--tilt", tilts[i % tilts.length] + "deg");
-    el.innerHTML = `<div class="tag"><span>Day ${n.day} · ${TYPES[n.type].label}</span></div>
+    el.innerHTML = `<div class="tag"><span>${dayLabel(n.day)} · ${TYPES[n.type].label}</span></div>
       <h3>${n.title}</h3>${n.body}
       <button class="got" type="button" aria-pressed="${done.has(n.id)}">${done.has(n.id) ? "Got it ✓" : "Got it"}</button>`;
-    el.querySelector(".got").addEventListener("click", () => {
-      done.has(n.id) ? done.delete(n.id) : done.add(n.id);
-      store.set([...done]); render();
-    });
+    el.querySelector(".got").addEventListener("click", () => { done.has(n.id) ? done.delete(n.id) : done.add(n.id); save("ml-sticky-done", [...done]); render(); });
     board.appendChild(el);
   });
-  if (!list.length) board.innerHTML = `<p class="empty">No notes match. Clear the search or pick another filter.</p>`;
-  const total = NOTES.length, got = NOTES.filter(n => done.has(n.id)).length;
-  document.getElementById("progress").innerHTML = `<b>${got}</b> / ${total} notes learned`;
+  out.appendChild(list.length ? board : empty());
+  return `<b>${NOTES.filter(n => done.has(n.id)).length}</b> / ${NOTES.length} notes learned`;
 }
-document.getElementById("q").addEventListener("input", e => { query = e.target.value; render(); });
-document.getElementById("hideDone").addEventListener("change", e => { hideDone = e.target.checked; render(); });
+function renderFormulas(out){
+  const list = FORMULAS.filter(f => matches(f, [f.name, f.tex, f.example, f.use, (f.symbols||[]).flat().join(" ")]));
+  out.appendChild(list.length ? groupByDay(list, items => {
+    const g = document.createElement("div"); g.className = "fgrid";
+    items.forEach(f => {
+      const c = document.createElement("article");
+      c.className = "fcard rich"; c.style.setProperty("--dc", dayColor(f.day));
+      c.innerHTML = `<div class="tag" style="color:var(--muted)">${dayLabel(f.day)}</div><h3>${f.name}</h3>
+        <div class="tex" data-tex="${esc(f.tex)}"><span class="tex-fallback">${esc(f.tex)}</span></div>
+        ${f.symbols ? `<div class="lbl">What each symbol means</div><table class="sym">${f.symbols.map(([s, m]) => `<tr><td>\\(${s}\\)</td><td>${m}</td></tr>`).join("")}</table>` : ""}
+        <div class="lbl">Worked example</div><div class="ex">${f.example}</div>
+        <div class="lbl">Use it when</div><div class="ex">${f.use}</div>`;
+      g.appendChild(c);
+    });
+    return g;
+  }) : empty());
+  return `<b>${FORMULAS.length}</b> formulas`;
+}
+function cardList(items, build){
+  const wrap = document.createElement("div");
+  items.forEach(i => wrap.appendChild(build(i)));
+  return wrap;
+}
+function renderLessons(out){
+  const list = LESSONS.filter(l => matches(l, [l.title, l.body]));
+  out.appendChild(list.length ? groupByDay(list, items => cardList(items, l => {
+    const d = document.createElement("details"); d.className = "card"; d.id = l.id;
+    d.style.setProperty("--dc", dayColor(l.day));
+    d.innerHTML = `<summary><span class="q">${l.title}</span></summary><div class="body rich">${l.body}</div>`;
+    return d;
+  })) : empty());
+  return `<b>${LESSONS.length}</b> topics`;
+}
+function renderInterview(out){
+  const list = INTERVIEW.filter(q => matches(q, [q.q, q.say, q.a]) && (activeLevel === "all" || q.level === activeLevel) && (!hideReady || !ready.has(q.id)));
+  out.appendChild(list.length ? groupByDay(list, items => cardList(items, q => {
+    const d = document.createElement("details");
+    d.className = "card qa" + (ready.has(q.id) ? " is-ready" : ""); d.id = q.id;
+    d.style.setProperty("--dc", dayColor(q.day));
+    d.innerHTML = `<summary><span class="lvl ${q.level}">${LEVELS[q.level]}</span><span class="q">${q.q}</span>${ready.has(q.id) ? '<span class="ready">ready ✓</span>' : ""}</summary>
+      <div class="body rich"><div class="say"><b>Say this first</b>${q.say}</div>${q.a}
+      <div class="qa-foot"><button class="got" type="button" aria-pressed="${ready.has(q.id)}">${ready.has(q.id) ? "I can answer this ✓" : "I can answer this"}</button></div></div>`;
+    d.querySelector(".got").addEventListener("click", () => { ready.has(q.id) ? ready.delete(q.id) : ready.add(q.id); save("ml-interview-ready", [...ready]); render(); });
+    return d;
+  })) : empty());
+  return `<b>${INTERVIEW.filter(q => ready.has(q.id)).length}</b> / ${INTERVIEW.length} questions ready`;
+}
+function empty(){ const p = document.createElement("p"); p.className = "empty"; p.textContent = "Nothing matches. Clear the search or pick another filter."; return p; }
+
+function render(){
+  const openIds = [...document.querySelectorAll("details.card[open]")].map(d => d.id);
+  renderChips();
+  document.querySelectorAll(".view").forEach(b => b.setAttribute("aria-selected", String(b.dataset.view === view)));
+  document.querySelectorAll("[data-for]").forEach(el => el.hidden = !el.dataset.for.split(" ").includes(view));
+  $("sub").textContent = SUBS[view];
+  $("c-sticky").textContent = NOTES.length; $("c-formulas").textContent = FORMULAS.length;
+  $("c-lessons").textContent = LESSONS.length; $("c-interview").textContent = INTERVIEW.length;
+  const out = $("out"); out.innerHTML = "";
+  const progress = {sticky:renderSticky, formulas:renderFormulas, lessons:renderLessons, interview:renderInterview}[view](out);
+  $("progress").innerHTML = progress;
+  openIds.forEach(id => { const d = document.getElementById(id); if (d) d.open = true; });
+  typeset(out);
+}
+document.querySelectorAll(".view").forEach(b => b.addEventListener("click", () => {
+  view = b.dataset.view; save("ml-view", view);
+  try { history.replaceState(null, "", "#" + view); } catch(e){}
+  render(); window.scrollTo({top:0});
+}));
+$("q").addEventListener("input", e => { query = e.target.value; render(); });
+$("hideDone").addEventListener("change", e => { hideDone = e.target.checked; render(); });
+$("hideReady").addEventListener("change", e => { hideReady = e.target.checked; render(); });
+$("expandAll").addEventListener("click", () => document.querySelectorAll("#out details.card").forEach(d => d.open = true));
+$("collapseAll").addEventListener("click", () => document.querySelectorAll("#out details.card").forEach(d => d.open = false));
+$("randomQ").addEventListener("click", () => {
+  const all = [...document.querySelectorAll("#out details.qa")];
+  if (!all.length) return;
+  all.forEach(d => d.open = false);
+  const pick = all[Math.floor(Math.random() * all.length)];
+  pick.scrollIntoView({behavior:"smooth", block:"center"});
+  pick.classList.remove("flash"); void pick.offsetWidth; pick.classList.add("flash");
+});
 render();
+// KaTeX loads with "defer"; typeset again once it's ready
+window.addEventListener("load", () => typeset($("out")));
 </script>

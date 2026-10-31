@@ -3,7 +3,7 @@
 My 30-day journey through machine learning and AI, from Python basics to transformers, RAG and agents, built alongside the PG Certification in AI/ML at IIIT Hyderabad. Each day has a runnable notebook with concepts, a live demo on real data, and exercises.
 
 - **Plan:** [30-Day ML & AI Mastery Plan (PDF)](docs/30-Day-ML-AI-Mastery-Plan.pdf) · [Markdown version](docs/30-Day-ML-AI-Mastery-Plan.md)
-- **Revision:** [`index.html`](index.html) is a sticky-notes board of the key points from each day. Download it and open it in any browser, or view it online if GitHub Pages is enabled.
+- **Revision:** [`index.html`](index.html) is a revision site with four sections for every day: **sticky notes** (key points), **formulas** (each symbol explained, with a worked example), **detailed notes** (full beginner-friendly explanations) and **interview prep** (questions with a short answer to say and the full explanation). Download it and open it in any browser, or view it online if GitHub Pages is enabled.
 
 ## Daily notebooks
 
