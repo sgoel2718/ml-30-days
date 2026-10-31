@@ -56,6 +56,28 @@ recent_events = deque(maxlen=RECENT_EVENTS_KEPT)  # newest messages, for new vis
 stream = {"paused": False, "speed": STREAM_START_SPEED}
 totals = {}          # running counters per task
 
+# Chart history: one bucket per second for the last 60 seconds, so a dashboard
+# that is refreshed (or opened later) can draw the charts straight away.
+CHART_SECONDS = 60
+chart_history = {}   # second -> {"spam": 0, "spamTotal": 0, "positive": 0, "sentimentTotal": 0}
+
+
+def add_to_chart_history(task, is_flagged):
+    """Count one result in the bucket for the current second."""
+    second = int(time.time())
+    bucket = chart_history.setdefault(
+        second, {"spam": 0, "spamTotal": 0, "positive": 0, "sentimentTotal": 0}
+    )
+    if task == "spam":
+        bucket["spamTotal"] += 1
+        bucket["spam"] += is_flagged
+    else:
+        bucket["sentimentTotal"] += 1
+        bucket["positive"] += is_flagged
+    # Forget buckets older than the chart window
+    for old_second in [s for s in chart_history if s < second - CHART_SECONDS]:
+        del chart_history[old_second]
+
 
 # \b means "word boundary": \b(sex)\b matches "sex" but not "Essex".
 # \w* after a word start matches the rest of the word: "porn" -> "pornography".
@@ -137,6 +159,7 @@ async def run_live_stream():
         totals[task]["processed"] += 1
         totals[task]["flagged"] += result["label"] == positive_label
         totals[task]["correct"] += is_correct
+        add_to_chart_history(task, result["label"] == positive_label)
 
         hidden = is_explicit(text)   # only changes what we SHOW, not the prediction
         event = {
@@ -189,6 +212,7 @@ def status():
         "max_speed": STREAM_MAX_SPEED,
         "totals": totals,
         "recent": list(recent_events),
+        "chart_history": [{"second": second, **bucket} for second, bucket in chart_history.items()],
     }
 
 

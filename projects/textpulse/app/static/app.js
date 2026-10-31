@@ -18,7 +18,6 @@ const totals = {
 let loadedModels = [];
 let feedFilter = "all";
 let waitingEvents = [];        // results received but not yet drawn
-let arrivalTimes = [];         // when each recent result arrived (for throughput)
 
 // One "bucket" per second for the charts: { second: {spam, spamTotal, positive, sentimentTotal} }
 const perSecond = new Map();
@@ -73,14 +72,16 @@ const sentimentChart = makeChart("sentiment-chart", "--positive", "Positive twee
 function updateCharts() {
   const now = Math.floor(Date.now() / 1000);
   const labels = [], spamValues = [], positiveValues = [];
-  for (let second = now - CHART_SECONDS + 1; second <= now; second++) {
+  // Plot completed seconds only: the current second is still filling up, and a
+  // half-full bucket with one or two messages would swing to 0% or 100%.
+  for (let second = now - CHART_SECONDS; second < now; second++) {
     const bucket = perSecond.get(second);
-    labels.push(second === now ? "now" : `-${now - second}s`);
+    labels.push(second === now - 1 ? "now" : `-${now - 1 - second}s`);
     spamValues.push(bucket && bucket.spamTotal ? (100 * bucket.spam) / bucket.spamTotal : null);
     positiveValues.push(bucket && bucket.sentimentTotal ? (100 * bucket.positive) / bucket.sentimentTotal : null);
   }
   // Forget buckets older than the chart window
-  for (const second of perSecond.keys()) if (second < now - CHART_SECONDS) perSecond.delete(second);
+  for (const second of perSecond.keys()) if (second < now - CHART_SECONDS - 1) perSecond.delete(second);
 
   spamChart.data.labels = labels;
   spamChart.data.datasets[0].data = spamValues;
@@ -107,7 +108,6 @@ function countEvent(event) {
   if (event.task === "spam") { bucket.spamTotal += 1; bucket.spam += isFlagged ? 1 : 0; }
   else { bucket.sentimentTotal += 1; bucket.positive += isFlagged ? 1 : 0; }
   perSecond.set(second, bucket);
-  arrivalTimes.push(Date.now());
 }
 
 function feedRow(event) {
@@ -158,10 +158,16 @@ function drawTotals() {
   $("kpi-accuracy-note").textContent = loadedModels.length > 1 ? "spam · sentiment, on unseen data" : "spam model, on unseen data";
 }
 
+// Messages per second, averaged over the last 5 complete seconds. It uses the
+// same per-second buckets as the charts, so it's right even just after a refresh.
 function drawThroughput() {
-  const fiveSecondsAgo = Date.now() - 5000;
-  arrivalTimes = arrivalTimes.filter((t) => t >= fiveSecondsAgo);
-  $("kpi-rate").textContent = (arrivalTimes.length / 5).toFixed(1);
+  const now = Math.floor(Date.now() / 1000);
+  let count = 0;
+  for (let second = now - 5; second < now; second++) {
+    const bucket = perSecond.get(second);
+    if (bucket) count += bucket.spamTotal + bucket.sentimentTotal;
+  }
+  $("kpi-rate").textContent = (count / 5).toFixed(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -294,6 +300,13 @@ async function start() {
   $("spam-chart-empty").hidden = loadedModels.includes("spam");
   $("sentiment-chart-empty").hidden = loadedModels.includes("sentiment");
   waitingEvents = status.recent;          // show the latest messages straight away
+  // Refill the charts with the last 60 seconds the server remembers
+  for (const bucket of status.chart_history || []) {
+    const { second, ...counts } = bucket;
+    perSecond.set(second, counts);
+  }
+  updateCharts();
+  drawThroughput();
   drawTotals();
   loadModelCard();
   connect();
