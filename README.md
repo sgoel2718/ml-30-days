@@ -16,6 +16,12 @@ My 30-day journey through machine learning and AI, from Python basics to transfo
 
 Upcoming: statistics (Day 4), linear algebra (Day 5), calculus (Day 6), then classical ML, deep learning, transformers, RAG and deployment. See the plan for the full schedule.
 
+## Projects
+
+| Project | What it does | Folder |
+| --- | --- | --- |
+| **TextPulse** | Real-time spam detection and tweet sentiment on 1.6M+ messages, with a live FastAPI dashboard | [projects/textpulse](projects/textpulse) |
+
 ## Running the notebooks
 
 The easiest way is Google Colab: use the Colab links above, where every library used here is pre-installed. If this repository is private, Colab asks once for permission to read your private GitHub repositories.

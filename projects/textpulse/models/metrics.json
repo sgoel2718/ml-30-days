@@ -1,0 +1,94 @@
+{
+  "spam": {
+    "task": "spam",
+    "rows_total": 35663,
+    "rows_train": 28530,
+    "rows_test": 7133,
+    "label_counts": {
+      "ham": 20426,
+      "spam": 15237
+    },
+    "sources": {
+      "Email": 30494,
+      "SMS": 5169
+    },
+    "vocabulary_size": 200000,
+    "best": {
+      "accuracy": 0.9795,
+      "precision": 0.9808,
+      "recall": 0.9711,
+      "f1": 0.9759,
+      "confusion_matrix": [
+        [
+          4027,
+          58
+        ],
+        [
+          88,
+          2960
+        ]
+      ],
+      "confusion_labels": [
+        "ham",
+        "spam"
+      ],
+      "algorithm": "Logistic Regression",
+      "train_seconds": 1.4,
+      "accuracy_by_source": {
+        "Email": 0.9843,
+        "SMS": 0.9507
+      }
+    },
+    "comparison": [
+      {
+        "accuracy": 0.9752,
+        "precision": 0.9668,
+        "recall": 0.9754,
+        "f1": 0.9711,
+        "confusion_matrix": [
+          [
+            3983,
+            102
+          ],
+          [
+            75,
+            2973
+          ]
+        ],
+        "confusion_labels": [
+          "ham",
+          "spam"
+        ],
+        "algorithm": "Naive Bayes",
+        "train_seconds": 0.1
+      },
+      {
+        "accuracy": 0.9795,
+        "precision": 0.9808,
+        "recall": 0.9711,
+        "f1": 0.9759,
+        "confusion_matrix": [
+          [
+            4027,
+            58
+          ],
+          [
+            88,
+            2960
+          ]
+        ],
+        "confusion_labels": [
+          "ham",
+          "spam"
+        ],
+        "algorithm": "Logistic Regression",
+        "train_seconds": 1.4,
+        "accuracy_by_source": {
+          "Email": 0.9843,
+          "SMS": 0.9507
+        }
+      }
+    ],
+    "trained_at": "2026-10-31T14:12:00+00:00"
+  }
+}
