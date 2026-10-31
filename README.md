@@ -18,9 +18,11 @@ Upcoming: statistics (Day 4), linear algebra (Day 5), calculus (Day 6), then cla
 
 ## Projects
 
-| Project | What it does | Folder |
-| --- | --- | --- |
-| **TextPulse** | Real-time spam detection and tweet sentiment on 1.6M+ messages, with a live FastAPI dashboard | [projects/textpulse](projects/textpulse) |
+Projects built during the course live in their own portfolio repository, [AI-ML-Projects](https://github.com/sgoel2718/AI-ML-Projects):
+
+| Project | What it does |
+| --- | --- |
+| [**TextPulse**](https://github.com/sgoel2718/AI-ML-Projects/tree/main/textpulse) | Real-time spam detection and tweet sentiment on 1.6M+ messages, with a live FastAPI dashboard |
 
 ## Running the notebooks
 
