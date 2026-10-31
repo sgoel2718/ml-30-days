@@ -57,7 +57,7 @@ New to the code? [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) walks through ever
 
 ## Quick start
 
-You need Python 3.10 or newer. On Windows, run these commands in **Anaconda Prompt** or **PowerShell**.
+You need Python 3.10 or newer. Using VS Code on Windows? Follow the click-by-click guide in [docs/RUN_IN_VSCODE.md](docs/RUN_IN_VSCODE.md). Otherwise, run these commands in **Anaconda Prompt** or a terminal.
 
 ```bash
 # 1. Get the code and install the libraries
