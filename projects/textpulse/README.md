@@ -15,7 +15,7 @@ TextPulse trains two text classifiers on public Kaggle datasets, then streams me
 - **Model comparison:** Naive Bayes and Logistic Regression are trained on the same data, and the better one is kept automatically.
 - **Bulk scoring benchmark:** scores every record in the datasets in batches and reports the throughput.
 - **Analyse your own text** through the dashboard or the REST API.
-- **Safe display mode** hides streamed messages that contain explicit content (real spam has plenty), so the dashboard is safe to present. Predictions still use the original text.
+- **Safe display mode** hides streamed messages that contain explicit content (real spam has plenty), so the dashboard is safe to present. Real @usernames in tweets are shown as `@user`. Predictions still use the original text.
 - **Works offline:** the charting library is bundled with the project, and light and dark themes follow your system setting.
 
 ## Results
@@ -25,9 +25,15 @@ Scores on held-out test data, which the models never saw during training.
 | Task | Data | Test messages | Best model | Accuracy | Precision | Recall | F1 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Spam detection | 35,663 emails and SMS (after removing duplicates) | 7,133 | Logistic Regression | **97.95%** | 98.08% | 97.11% | 97.59% |
-| Sentiment analysis | 1,600,000 tweets | 320,000 | _run `python -m src.train`_ | | | | |
+| Sentiment analysis | 1,600,000 tweets | 320,000 | Logistic Regression | **82.30%** | 81.66% | 83.31% | 82.47% |
 
 Spam accuracy by source: **email 98.4%**, **SMS 95.1%**. SMS is harder because the messages are short and full of slang.
+
+Sentiment140 is a hard benchmark because its labels were assigned automatically from emoticons, so some are noisy. Classical models typically score around 77–83% on it. Word pairs help a lot here: *"not bad at all, actually really good"* is correctly positive, and *"I don't like this phone, not good"* is correctly negative.
+
+**Bulk scoring:** all **1,635,663 records** scored in **42.5 seconds** (about 38,500 per second) on a 2-core machine, using `python -m scripts.benchmark`.
+
+**Training time:** about 3 minutes for both models on a 2-core machine with 7 GB of RAM.
 
 ## How it works
 
@@ -65,7 +71,7 @@ pip install -r requirements.txt
 # 2. Download the datasets into data/ (see data/README.md if Kaggle asks you to sign in)
 python -m scripts.download_data
 
-# 3. Train both models (about 5 to 10 minutes on a laptop, mostly for the 1.6M tweets)
+# 3. Train both models (about 3 to 5 minutes on a laptop, mostly for the 1.6M tweets)
 python -m src.train
 
 # 4. Optional: score every record and measure the speed

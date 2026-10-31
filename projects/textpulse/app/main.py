@@ -66,6 +66,17 @@ EXPLICIT_PATTERN = re.compile(
 )
 HIDDEN_TEXT = "Message hidden in safe display mode (explicit content)"
 
+# Tweets mention real people's accounts. We show "@user" instead of the real
+# handle, the same way clean_text() treats it for the model.
+USERNAME = re.compile(r"@\w+")
+
+
+def display_text(text):
+    """What the dashboard shows for a streamed message."""
+    if is_explicit(text):
+        return HIDDEN_TEXT
+    return USERNAME.sub("@user", text[:280])
+
 
 def is_explicit(text):
     """True if safe display mode is on and the text contains explicit words."""
@@ -132,7 +143,7 @@ async def run_live_stream():
             "type": "message",
             "task": task,
             "source": source,
-            "text": HIDDEN_TEXT if hidden else text[:280],
+            "text": display_text(text),
             "hidden": hidden,
             "prediction": result["label"],
             "confidence": result["confidence"],
