@@ -18,7 +18,7 @@
   --board:#e9ecef; --board-ink:#1d232b; --muted:#5b6672; --line:#cfd5db; --chip:#ffffff; --chip-on:#1d232b; --chip-on-ink:#ffffff;
   --card:#ffffff; --card-soft:#f4f6f8; --accent:#2f6fb0;
   --n-concept:#cfe6ff; --n-pitfall:#ffd0d4; --n-code:#fff1a8; --n-rule:#d4f2cc;
-  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --d5:#1f8f8f; --dP:#c2456b;
+  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --d5:#1f8f8f; --d6:#b8641d; --dP:#c2456b;
   --lv-basic:#d4f2cc; --lv-mid:#fff1a8; --lv-adv:#ffd0d4;
   --n-ink:#1f2328; --n-soft:#4a525c; --code-bg:rgba(0,0,0,.07); --shadow:0 1px 2px rgba(20,30,40,.12),0 6px 14px rgba(20,30,40,.10);
   --f-note:"Kalam","Segoe Print","Comic Sans MS",cursive;
@@ -29,14 +29,14 @@
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --d6:#e0954f; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --d6:#e0954f; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}
 
@@ -176,8 +176,8 @@ details.card .body{padding:0 18px 14px 34px;max-width:82ch}
 
 <script>
 const R = String.raw;
-const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", 5:"Day 5 · Linear algebra", P:"Project · TextPulse"};
-const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", 5:"Linear algebra: vectors to PCA", P:"TextPulse: real-time spam & sentiment"};
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", 5:"Day 5 · Linear algebra", 6:"Day 6 · Calculus", P:"Project · TextPulse"};
+const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", 5:"Linear algebra: vectors to PCA", 6:"Calculus & gradient descent", P:"TextPulse: real-time spam & sentiment"};
 const TYPES = {concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}};
 const LEVELS = {basic:"Basic", mid:"Intermediate", adv:"Advanced"};
 const SUBS = {
@@ -1947,6 +1947,223 @@ INTERVIEW.push(
   {id:"i5-svd", day:5, level:"adv", q:"What is SVD and how does it relate to eigen-decomposition?",
    say:R`Singular Value Decomposition factors any matrix as U Σ Vᵀ: a rotation, a scaling along perpendicular axes, then another rotation. It works for any shape of matrix. Its singular values are the square roots of the eigenvalues of AᵀA, and V holds AᵀA's eigenvectors.`,
    a:R`<p>Uses: PCA (SVD of the centred data), the condition number (largest ÷ smallest singular value), low-rank approximation for compression and recommender systems (keep the top k singular values), pseudo-inverses for least squares, and LSA topic models on TF-IDF matrices.</p>`},
+);
+
+// ===================== Day 6: Calculus =====================
+NOTES.push(
+  {id:"d6-deriv", day:6, type:"concept", title:"Derivative = slope",
+   body:`<p>f' &gt; 0: going up → move left to decrease f. f' &lt; 0: move right. f' = 0: flat (min, max, plateau).</p>`},
+  {id:"d6-numeric", day:6, type:"code", title:"Numerical derivative",
+   body:`<pre><code>(f(x + h) - f(x - h)) / (2 * h)   # h = 1e-5</code></pre><p>Use it to gradient-check any formula.</p>`},
+  {id:"d6-rules", day:6, type:"concept", title:"Rules to know",
+   body:`<table><tr><td>xⁿ</td><td>n·xⁿ⁻¹</td></tr><tr><td>eˣ</td><td>eˣ</td></tr><tr><td>ln x</td><td>1/x</td></tr><tr><td>σ(z)</td><td>σ(1 − σ), max 0.25</td></tr><tr><td>ReLU</td><td>1 if z &gt; 0 else 0</td></tr></table>`},
+  {id:"d6-chain", day:6, type:"concept", title:"Chain rule",
+   body:`<p>d/dx f(g(x)) = f'(g(x))·g'(x). Multiply local slopes along the chain. Backpropagation = the chain rule, run backwards.</p>`},
+  {id:"d6-logistic", day:6, type:"rule", title:"Logistic gradient collapses",
+   body:`<p>∂L/∂w = <b>(p − y)·x</b>. Prediction minus truth, times input.</p>`},
+  {id:"d6-gradient", day:6, type:"concept", title:"Gradient points uphill",
+   body:`<p>∇f = all partial derivatives. −∇f = steepest descent. It's perpendicular to contour lines.</p>`},
+  {id:"d6-convex", day:6, type:"rule", title:"Convex = one minimum",
+   body:`<p>MSE and log loss are convex bowls. Neural-network losses aren't: local minima and saddle points.</p>`},
+  {id:"d6-mse", day:6, type:"code", title:"MSE gradient, vectorised",
+   body:`<pre><code>grad = 2 / n * X.T @ (X @ w - y)
+w -= lr * grad</code></pre>`},
+  {id:"d6-gd", day:6, type:"concept", title:"Gradient descent",
+   body:`<p>w ← w − α·∇L, repeat. Tips: tip = 0.1050·bill + 0.9203 in 100 steps, matching polyfit exactly.</p>`},
+  {id:"d6-lr", day:6, type:"pitfall", title:"Learning rate decides everything",
+   body:`<p>Standardised tips: α 0.01 crawls, 0.1 good, 0.5 one step, 0.95 overshoots, 1.02 explodes (MSE 228).</p>`},
+  {id:"d6-scale", day:6, type:"pitfall", title:"Unscaled features cripple GD",
+   body:`<p>Raw bills: α ≥ 0.003 diverges, 0.002 still unfinished after 2,000 steps. Standardised: done in 100.</p>`},
+  {id:"d6-minibatch", day:6, type:"rule", title:"Batch vs SGD vs mini-batch",
+   body:`<p>All rows (accurate, slow) · 1 row (fast, noisy) · <b>32–512 rows</b> (the neural-network standard).</p>`},
+  {id:"d6-integral", day:6, type:"concept", title:"Integral = area",
+   body:`<p>P(a &lt; X &lt; b) = area under the PDF = F(b) − F(a). E[X] = ∫x f(x) dx. AUC is an area.</p>`},
+  {id:"d6-quad", day:6, type:"pitfall", title:"quad over ±∞ can miss",
+   body:`<p><code>quad(pdf, -inf, inf)</code> gave 0 for N(170, 10): it never sampled the bump. Use finite limits (μ ± 7σ).</p>`},
+);
+
+FORMULAS.push(
+  {id:"f6-def", day:6, name:"Derivative (definition and numerical estimate)",
+   tex:R`f'(x) = \lim_{h\to 0}\frac{f(x+h)-f(x)}{h} \;\approx\; \frac{f(x+h)-f(x-h)}{2h}`,
+   symbols:[[R`h`,"a tiny step, e.g. 10⁻⁵"],[R`f'(x)`,"slope of f at x"]],
+   example:R`f(x) = x² − 4x + 5: f'(x) = 2x − 4 → slope −4 at x = 0, <b>0 at x = 2</b> (the minimum), +6 at x = 5. The central difference matched every value.`,
+   use:"Understanding direction of change, and gradient-checking hand-derived formulas."},
+  {id:"f6-rules", day:6, name:"Core derivative rules",
+   tex:R`(x^n)' = n x^{n-1}\quad (e^x)' = e^x \quad (\ln x)' = \tfrac{1}{x} \quad (fg)' = f'g + fg' \quad \left(\tfrac{f}{g}\right)' = \tfrac{f'g - fg'}{g^2}`,
+   symbols:[],
+   example:R`(5x² + 3x − 7)' = <b>10x + 3</b>; (x·eˣ)' = <b>eˣ + x·eˣ</b> (product rule).<pre><code>sp.diff(x * sp.exp(x), x)</code></pre>`,
+   use:"Differentiating any loss or activation by hand, then checking with SymPy."},
+  {id:"f6-sigmoid", day:6, name:"Derivative of the sigmoid",
+   tex:R`\sigma(z) = \frac{1}{1+e^{-z}}, \qquad \sigma'(z) = \sigma(z)\,\big(1-\sigma(z)\big)`,
+   symbols:[[R`\sigma'(0)`,"= 0.25, the largest value"]],
+   example:R`z = 0: σ = 0.5 → σ' = <b>0.25</b>. z = 5: σ = 0.993 → σ' = <b>0.0066</b>, almost flat.`,
+   use:"Logistic regression and output layers. Its tiny slope at large |z| is the vanishing-gradient problem in deep networks."},
+  {id:"f6-relu", day:6, name:"ReLU and its derivative",
+   tex:R`\text{ReLU}(z) = \max(0, z), \qquad \text{ReLU}'(z) = \begin{cases}1 & z > 0\\ 0 & z < 0\end{cases}`,
+   symbols:[],
+   example:R`z = 3 → output 3, slope <b>1</b>; z = −2 → output 0, slope <b>0</b>.`,
+   use:"The default hidden-layer activation (Day 16): cheap, and its gradient doesn't shrink for positive inputs."},
+  {id:"f6-chain", day:6, name:"Chain rule",
+   tex:R`\frac{d}{dx} f\big(g(x)\big) = f'\big(g(x)\big)\cdot g'(x) \qquad \frac{dy}{dx} = \frac{dy}{du}\cdot\frac{du}{dx}`,
+   symbols:[[R`u = g(x)`,"the inner function"]],
+   example:R`L = (wx − y)² → dL/dw = 2(wx − y)·x. At w = 0.5, x = 3, y = 4: 2(1.5 − 4)·3 = <b>−15</b> (numerical check: −15.0).`,
+   use:"Differentiating any model built from layers. Backpropagation applies it backwards through the network."},
+  {id:"f6-loggrad", day:6, name:"Gradient of log loss (logistic regression)",
+   tex:R`\frac{\partial L}{\partial w} = \frac{\partial L}{\partial p}\cdot\frac{\partial p}{\partial z}\cdot\frac{\partial z}{\partial w} = \frac{p-y}{p(1-p)}\cdot p(1-p)\cdot x = (p-y)\,x`,
+   symbols:[[R`z = wx + b`,"linear score"],[R`p = \sigma(z)`,"predicted probability"],[R`y`,"true label (0 or 1)"]],
+   example:R`w = 0.4, b = 0.2, x = 1.5, y = 1 → p = 0.69 → gradient (0.69 − 1)·1.5 = <b>−0.465</b>, matching the numerical check exactly. Vectorised: ∇w = Xᵀ(p − y)/n.`,
+   use:"Training logistic regression (and TextPulse's models) with gradient descent."},
+  {id:"f6-partial", day:6, name:"Partial derivatives and the gradient",
+   tex:R`\nabla f = \left[\frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_d}\right]`,
+   symbols:[[R`\partial f/\partial x_i`,"change in f when only x_i moves"],[R`\nabla f`,"points in the direction of steepest increase"]],
+   example:R`f = x² + xy + 3y²: ∂f/∂x = 2x + y, ∂f/∂y = x + 6y → at (2, 1), ∇f = <b>[5, 8]</b>.`,
+   use:"Every model with more than one parameter: the gradient tells each parameter which way to move."},
+  {id:"f6-second", day:6, name:"Second-derivative test",
+   tex:R`f'(x^*) = 0 \ \text{and}\ \begin{cases} f''(x^*) > 0 & \text{minimum}\\ f''(x^*) < 0 & \text{maximum}\end{cases}`,
+   symbols:[[R`f''`,"curvature: the slope of the slope"]],
+   example:R`h(x) = x⁴ − 3x² + x: h' = 0 at x = −1.30 (global min), 0.17 (max), 1.13 (local min).`,
+   use:"Classifying stationary points; convexity (f'' ≥ 0 everywhere) guarantees a single minimum."},
+  {id:"f6-mse", day:6, name:"Mean squared error",
+   tex:R`\text{MSE}(w,b) = \frac{1}{n}\sum_{i=1}^{n}\big(w x_i + b - y_i\big)^2`,
+   symbols:[[R`w x_i + b`,"prediction"],[R`y_i`,"true value"]],
+   example:R`Tips with w = b = 0: MSE = <b>10.90</b>; at the best line: <b>1.036</b>.`,
+   use:"The standard regression loss: convex, smooth, and punishes big errors heavily (sensitive to outliers)."},
+  {id:"f6-msegrad", day:6, name:"Gradient of MSE",
+   tex:R`\frac{\partial\,\text{MSE}}{\partial w} = \frac{2}{n}\sum (wx_i + b - y_i)\,x_i, \quad \frac{\partial\,\text{MSE}}{\partial b} = \frac{2}{n}\sum (wx_i + b - y_i), \quad \nabla_w = \frac{2}{n}X^{\mathsf T}(Xw - y)`,
+   symbols:[[R`X`,"data matrix with a column of 1s"],[R`Xw - y`,"vector of errors"]],
+   example:R`Tips at w = 0.05, b = 1.0 (raw bills): ∂/∂w = <b>−48.613</b>, ∂/∂b = <b>−2.018</b>, both matching the numerical derivatives.`,
+   use:"Training linear regression by gradient descent; the same \"error × input\" pattern appears in every model."},
+  {id:"f6-gd", day:6, name:"Gradient descent update",
+   tex:R`\theta \leftarrow \theta - \alpha\,\nabla_\theta L(\theta)`,
+   symbols:[[R`\theta`,"all parameters (weights and bias)"],[R`\alpha`,"learning rate (step size)"]],
+   example:R`Tips (standardised bill), α = 0.1, from w = b = 0: MSE 10.90 → 1.15 after 10 steps → 1.036 after 50. Final line tip = <b>0.1050·bill + 0.9203</b>, identical to np.polyfit.`,
+   use:"Training almost every ML model. Stable when α < 2 / (largest curvature)."},
+  {id:"f6-lr", day:6, name:"Learning-rate stability on a quadratic bowl",
+   tex:R`L = \tfrac{c}{2}(\theta-\theta^*)^2: \quad \theta_{t+1}-\theta^* = (1 - \alpha c)(\theta_t - \theta^*) \;\Rightarrow\; \text{converges iff } 0 < \alpha < \tfrac{2}{c}`,
+   symbols:[[R`c`,"curvature (second derivative); 2 for standardised MSE"],[R`1-\alpha c`,"how much of the error remains each step"]],
+   example:R`c = 2: α = 0.5 → factor 0 (done in <b>one step</b>); α = 0.95 → −0.9 (overshoots, shrinking); α = 1.02 → −1.04 (grows: <b>diverges</b>).`,
+   use:"Choosing a learning rate, and understanding why badly scaled features (very different curvatures) force a tiny α."},
+  {id:"f6-sgd", day:6, name:"Mini-batch stochastic gradient descent",
+   tex:R`\theta \leftarrow \theta - \alpha\,\frac{1}{|B|}\sum_{i \in B}\nabla_\theta \ell_i(\theta)`,
+   symbols:[[R`B`,"a random batch of rows (e.g. 32)"],[R`\ell_i`,"loss on row i"]],
+   example:R`Diabetes data, batch 32, α = 0.01, 200 epochs: MSE <b>2868.5</b> vs the exact optimum 2859.7.`,
+   use:"Large datasets and neural networks: each step is cheap, and the noise can even help escape poor regions."},
+  {id:"f6-integral", day:6, name:"Definite integral (area under a curve)",
+   tex:R`\int_a^b f(x)\,dx \approx \sum_{i=1}^{m} f(x_i)\,\Delta x, \qquad \Delta x = \frac{b-a}{m}`,
+   symbols:[[R`m`,"number of slices"],[R`x_i`,"slice midpoints"]],
+   example:R`Area under N(170, 10) from 160 to 180: 4 slices 0.6878, 20 slices 0.6829, 1,000 slices 0.68269 = scipy quad = F(180) − F(160) = <b>0.6827</b>.`,
+   use:"Probabilities from continuous distributions, AUC, and expected values."},
+  {id:"f6-expect", day:6, name:"Expected value as an integral",
+   tex:R`E[X] = \int_{-\infty}^{\infty} x\,f(x)\,dx`,
+   symbols:[[R`f(x)`,"probability density function"]],
+   example:R`Exponential waiting time with scale 5: ∫₀^∞ x·(1/5)e^(−x/5) dx = <b>5</b> (numerically and exactly with SymPy).`,
+   use:"Means and expected losses of continuous variables; the theory behind \"average error\"."},
+);
+
+LESSONS.push(
+  {id:"l6-deriv", day:6, title:"1. Derivatives: slope and rate of change",
+   body:R`\[f'(x) = \lim_{h\to 0}\frac{f(x+h) - f(x)}{h}\]
+<p>The derivative is the slope of the tangent line: how much f changes per tiny change in x. For f(x) = x² − 4x + 5, the slope is 2x − 4: negative left of 2 (going down), zero at 2 (the bottom), positive to the right.</p>
+<p><b>The ML reading</b>: if the loss's slope with respect to a weight is positive, decreasing the weight lowers the loss. That's the entire idea of gradient descent: move against the slope.</p>
+<h4>Numerical derivatives</h4>
+<pre><code>def numerical_derivative(f, x, h=1e-5):
+    return (f(x + h) - f(x - h)) / (2 * h)    # central difference</code></pre>
+<p>Too large an h is inaccurate; too small hits floating-point rounding. 10⁻⁵ is a good default. Engineers use this to <b>gradient-check</b> hand-written derivatives.</p>
+<h4>Rules and ML functions</h4>
+<table><tr><th>Function</th><th>Derivative</th><th>Note</th></tr>
+<tr><td>xⁿ</td><td>n·xⁿ⁻¹</td><td>power rule</td></tr>
+<tr><td>eˣ, ln x</td><td>eˣ, 1/x</td><td>log loss's 1/p makes confident mistakes costly</td></tr>
+<tr><td>σ(z)</td><td>σ(z)(1 − σ(z))</td><td>max 0.25; nearly 0 for large |z|: vanishing gradients</td></tr>
+<tr><td>ReLU</td><td>1 if z &gt; 0, else 0</td><td>default activation in deep networks</td></tr></table>
+<p>SymPy differentiates symbolically: <code>sp.diff(x * sp.exp(x), x)</code> → x·eˣ + eˣ.</p>`},
+  {id:"l6-chain", day:6, title:"2. The chain rule and backpropagation",
+   body:R`<p>Models are functions inside functions. The chain rule multiplies the local slopes along the chain:</p>
+\[\frac{dL}{dw} = \frac{dL}{du}\cdot\frac{du}{dw}\]
+<p><b>Squared error</b>: L = (w·x − y)². Outer slope 2(w·x − y), inner slope x → dL/dw = 2(w·x − y)·x. At w = 0.5, x = 3, y = 4: −15, and the numerical check agrees.</p>
+<h4>Logistic regression in one line</h4>
+<p>Chain: z = w·x + b → p = σ(z) → L = −[y ln p + (1−y) ln(1−p)]. The three local slopes are (p − y)/(p(1 − p)), p(1 − p) and x; the middle terms cancel, leaving</p>
+\[\frac{\partial L}{\partial w} = (p - y)\,x\]
+<p>"Prediction minus truth, times the input": checked numerically (−0.465 both ways).</p>
+<p><b>Backpropagation</b> (Day 16) is this applied to a network with millions of links: compute each layer's local derivative once, and multiply backwards from the loss to every weight. Frameworks like PyTorch do it automatically ("autograd"), but knowing the chain rule is how you debug vanishing or exploding gradients.</p>`},
+  {id:"l6-gradient", day:6, title:"3. Partial derivatives, the gradient, and convexity",
+   body:R`<p>A <b>partial derivative</b> changes one input while freezing the rest. The <b>gradient</b> stacks all of them into a vector. For f = x² + xy + 3y²: ∇f = [2x + y, x + 6y], which is [5, 8] at (2, 1).</p>
+<ul><li>The gradient points in the direction of <b>steepest increase</b>; its length is the steepness.</li>
+<li>It's always perpendicular to contour lines (lines of equal f).</li>
+<li>−∇f is the steepest way down: gradient descent follows it.</li></ul>
+<h4>Minima, maxima and convexity</h4>
+<p>At a minimum or maximum the gradient is zero. The second derivative tells which: positive curvature is a bowl (minimum), negative is a hill (maximum). h(x) = x⁴ − 3x² + x has a global minimum at −1.30, a maximum at 0.17 and a local minimum at 1.13: gradient descent started on the right would get stuck in the local one.</p>
+<p>A <b>convex</b> loss curves up everywhere, so there's only one minimum and gradient descent always finds it. MSE (linear regression) and log loss (logistic regression) are convex; neural-network losses aren't, which is why initialisation, learning-rate schedules and momentum matter in deep learning.</p>`},
+  {id:"l6-gd", day:6, title:"4. Live demo: gradient descent from scratch",
+   body:R`<pre><code>def gradient_descent(x, y, lr, steps, w=0.0, b=0.0):
+    for _ in range(steps):
+        error = w * x + b - y                  # prediction - truth
+        w -= lr * 2 * np.mean(error * x)       # dMSE/dw
+        b -= lr * 2 * np.mean(error)           # dMSE/db
+    return w, b</code></pre>
+<p>On 244 restaurant bills (bill standardised first), with α = 0.1, MSE fell from 10.90 to 1.15 in 10 steps and settled at 1.036. Converted back to dollars: <b>tip = 0.1050 × bill + 0.9203</b>, identical to <code>np.polyfit</code> and scikit-learn. A $20 bill predicts $3.02.</p>
+<h4>The learning rate</h4>
+<table><tr><th>α</th><th>Behaviour (40 steps)</th></tr>
+<tr><td>0.01</td><td>crawls: MSE still 2.99</td></tr>
+<tr><td>0.1</td><td>smooth convergence: 1.036</td></tr>
+<tr><td>0.5</td><td>exactly one step to the minimum</td></tr>
+<tr><td>0.95</td><td>overshoots back and forth, still converges: 1.038</td></tr>
+<tr><td>1.02</td><td>diverges: MSE 228 and rising</td></tr></table>
+<p>For a quadratic bowl with curvature c, each step multiplies the remaining error by (1 − αc). Standardised MSE has c = 2, so α must stay below 1.</p>
+<h4>Scaling decides convergence</h4>
+<p>With raw bills (10–50), the w-direction is far steeper than the b-direction. Any α above about 0.0021 (= 2 ÷ the steepest curvature) diverges, and α = 0.002 still hadn't converged after 2,000 steps (MSE 1.046). Standardised: done in 100. This is the practical reason to scale features before training any gradient-based model.</p>`},
+  {id:"l6-multi", day:6, title:"5. Vectorised gradient descent and mini-batches",
+   body:R`\[\nabla_w \text{MSE} = \frac{2}{n}X^{\mathsf T}(Xw - y)\]
+<p>With a column of 1s for the intercept, one line computes the gradient for every weight. On the diabetes data (442 patients, 10 standardised features), 2,000 steps reached MSE 2860.4 vs the exact least-squares optimum 2859.7.</p>
+<p>The individual weights for s1 and s2 differed most from the exact solution (−31.1 vs −37.7). Those two blood tests are highly correlated, so the loss surface is a long flat valley in that direction: many weight combinations give nearly the same error, and gradient descent moves slowly along it. That's Day 5's ill-conditioning showing up in training.</p>
+<h4>Three flavours</h4>
+<table><tr><th>Variant</th><th>Rows per step</th><th>Use</th></tr>
+<tr><td>Batch</td><td>all</td><td>small data; smooth, exact gradients</td></tr>
+<tr><td>Stochastic</td><td>1</td><td>streaming data; noisy</td></tr>
+<tr><td>Mini-batch</td><td>32–512</td><td>neural networks; fits GPU memory</td></tr></table>
+<p>One <b>epoch</b> is one full pass over the data. Mini-batch SGD with batch 32 reached MSE 2868.5 after 200 epochs: slightly noisier, much cheaper per step. Improvements you'll meet later: momentum, and Adam (adaptive learning rate per parameter).</p>`},
+  {id:"l6-integral", day:6, title:"6. Integration: areas, probabilities and expectations",
+   body:R`<p>An integral adds up thin slices: \(\int_a^b f(x)\,dx \approx \sum f(x_i)\Delta x\). More slices → closer to the exact area.</p>
+<p>P(160 &lt; height &lt; 180) for N(170, 10): 4 slices gave 0.6878, 20 gave 0.6829, 1,000 gave 0.68269, which matches <code>integrate.quad</code> and the CDF difference F(180) − F(160) = 0.6827. The CDF <b>is</b> the integral of the PDF, and the total area under any PDF is 1.</p>
+<div class="warn"><code>integrate.quad(pdf, -np.inf, np.inf)</code> returned 0 for this narrow distribution: the integrator's sample points never landed on the bump. Give finite limits that cover the mass (μ ± 7σ gave exactly 1).</div>
+<h4>Expected value</h4>
+<p>E[X] = ∫ x·f(x) dx. For an exponential waiting time with scale 5, both numerical integration and SymPy give exactly 5.</p>
+<p><b>In ML</b>: probabilities of continuous variables, the AUC metric (area under the ROC curve, Day 9), and expected loss, which training minimises on average over the data.</p>`},
+);
+
+INTERVIEW.push(
+  {id:"i6-deriv", day:6, level:"basic", q:"What is a derivative, and why does ML need it?",
+   say:R`A derivative is the rate of change: the slope of a function at a point. Training minimises a loss, and the derivative of the loss with respect to each parameter tells us which direction to move that parameter, and roughly how far, to reduce the error.`,
+   a:R`<p>Example: f(x) = x² − 4x + 5 has slope 2x − 4; at x = 0 it's −4, so increasing x lowers f, and the slope is 0 at the minimum x = 2. With many parameters the derivatives form the gradient, and gradient descent follows its negative.</p>`},
+  {id:"i6-gd", day:6, level:"basic", q:"Explain gradient descent.",
+   say:R`Start with some parameters, compute the gradient of the loss, take a step in the opposite direction scaled by the learning rate, and repeat until the loss stops improving. It's like walking downhill in fog by feeling the slope under your feet.`,
+   a:R`<p>Update: θ ← θ − α∇L. On the tips data it found tip = 0.1050·bill + 0.9203 in 100 steps, identical to the exact least-squares solution. Stopping criteria: a maximum number of steps, the loss change below a tolerance, or validation loss rising (early stopping).</p>`},
+  {id:"i6-lr", day:6, level:"basic", q:"What happens if the learning rate is too high or too low?",
+   say:R`Too low and training is painfully slow and may stop before converging; too high and it overshoots the minimum, oscillates, or diverges to infinity. A good learning rate drops the loss quickly and smoothly.`,
+   a:R`<p>Standardised tips data: α = 0.01 still had MSE 2.99 after 40 steps; 0.1 converged smoothly; 0.95 oscillated but converged; 1.02 diverged. Theory: for a bowl with curvature c, steps are stable when α < 2/c. In practice: try values on a log scale (0.001, 0.01, 0.1), use learning-rate schedules or warm-up, or adaptive optimisers like Adam.</p>`},
+  {id:"i6-chain", day:6, level:"mid", q:"What is the chain rule, and how does it relate to backpropagation?",
+   say:R`The chain rule says the derivative of a composition is the product of the local derivatives along the chain. A neural network is a long composition of layers, and backpropagation applies the chain rule from the loss backwards, reusing intermediate results so every weight's gradient is computed in one backward pass.`,
+   a:R`<p>Small example: logistic regression's z → σ → log loss gives ∂L/∂w = (p − y)·x after cancellation. Problems backprop exposes: multiplying many slopes below 1 (e.g. sigmoid's max of 0.25) makes gradients vanish in early layers; many slopes above 1 make them explode. Fixes: ReLU, careful initialisation, batch normalisation, residual connections, gradient clipping.</p>`},
+  {id:"i6-logistic", day:6, level:"mid", q:"Derive the gradient of the log loss for logistic regression.",
+   say:R`With z = w·x + b, p = σ(z) and L = −[y ln p + (1 − y) ln(1 − p)]: ∂L/∂p = (p − y)/(p(1 − p)), ∂p/∂z = p(1 − p), ∂z/∂w = x. Multiplying, the p(1 − p) terms cancel, giving (p − y)·x. For a batch: Xᵀ(p − y)/n.`,
+   a:R`<p>It's identical in form to linear regression's gradient ("error × input"), which isn't a coincidence: both come from generalised linear models with their natural loss. Using log loss instead of MSE with a sigmoid also matters: MSE + sigmoid gives a non-convex loss and tiny gradients when the model is confidently wrong.</p>`},
+  {id:"i6-scale", day:6, level:"mid", q:"Why does feature scaling speed up gradient descent?",
+   say:R`Unscaled features give a loss surface that's a long, narrow valley: very steep in some directions and flat in others. One learning rate can't suit both, so you must use a tiny step to avoid blowing up in the steep direction, and progress in the flat direction crawls. Standardising makes the bowl round, so a single learning rate works well everywhere.`,
+   a:R`<p>Tips data, raw bills: α ≥ 0.003 diverged and α = 0.002 hadn't converged after 2,000 steps. Standardised: converged in about 50 steps with α = 0.1. Formally, convergence speed depends on the ratio of the largest to smallest curvature (the condition number, Day 5).</p>`},
+  {id:"i6-sgd", day:6, level:"mid", q:"Batch vs stochastic vs mini-batch gradient descent?",
+   say:R`Batch uses all data for each step: accurate but slow on large data. Stochastic uses one example: cheap but very noisy. Mini-batch uses a small random batch, typically 32 to 512: a good balance, and it matches how GPUs process data in parallel, so it's the default for neural networks.`,
+   a:R`<p>Noise isn't all bad: it can help escape sharp minima and saddle points and often generalises better. Shuffle the data each epoch. Batch size and learning rate interact: larger batches usually allow larger learning rates.</p>`},
+  {id:"i6-convex", day:6, level:"mid", q:"What is a convex function, and why does it matter for optimisation?",
+   say:R`A convex function curves upward everywhere, like a bowl, so any local minimum is the global minimum. Gradient descent on a convex loss with a suitable learning rate is guaranteed to find the best solution. Linear and logistic regression losses are convex; neural-network losses aren't.`,
+   a:R`<p>Non-convex example: x⁴ − 3x² + x has a local minimum at 1.13 and the global one at −1.30; starting on the right, gradient descent ends at the worse one. In high-dimensional neural networks, saddle points are a bigger issue than bad local minima, and momentum or Adam help push through them.</p>`},
+  {id:"i6-gradcheck", day:6, level:"adv", q:"How would you verify that a hand-written gradient is correct?",
+   say:R`Gradient checking: compare the analytic gradient with a numerical estimate from a central finite difference, (f(θ + h) − f(θ − h))/2h with h around 10⁻⁵, for a few random parameter values. The relative difference should be tiny, around 10⁻⁷ or less.`,
+   a:R`<p>In the notebook, the MSE gradients matched to 5 decimals (−48.61327 both ways), and the logistic gradient matched at −0.465038. Tips: use float64, check a few coordinates rather than all for big models, and turn off randomness like dropout while checking.</p>`},
+  {id:"i6-closed", day:6, level:"adv", q:"Linear regression has a closed-form solution. Why use gradient descent at all?",
+   say:R`The normal equation needs to form and solve XᵀX, which costs about d³ operations and lots of memory for many features, and it's unstable when features are collinear. Gradient descent scales to huge datasets, works in streaming or mini-batches, extends to regularisation and non-linear models, and is the only option for neural networks.`,
+   a:R`<p>For small d, solving directly (via QR or SVD, as in <code>np.linalg.lstsq</code>) is great and exact. On the diabetes data, gradient descent reached MSE 2860.4 vs the exact 2859.7; its weights on two correlated blood tests differed most, showing how ill-conditioning slows gradient descent along flat valleys.</p>`},
+  {id:"i6-vanish", day:6, level:"adv", q:"What causes vanishing and exploding gradients?",
+   say:R`Backpropagation multiplies one local derivative per layer. If those factors are mostly below 1, like the sigmoid's at most 0.25, the product shrinks exponentially and early layers stop learning; if they're above 1, it grows exponentially and training blows up.`,
+   a:R`<p>Fixes: ReLU-family activations (slope 1 for positive inputs), He/Xavier initialisation, batch or layer normalisation, residual (skip) connections as in ResNets and transformers, gradient clipping for exploding gradients, and LSTMs/GRUs for recurrent networks.</p>`},
 );
 
 

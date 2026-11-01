@@ -15,8 +15,9 @@ My 30-day journey through machine learning and AI, from Python basics to transfo
 | 3b | Spam filter step by step: every line of Naive Bayes on 4 emails, with all values printed | Hand-checkable spam filter | [Notebook](notebooks/Day03b_Spam_Filter_Step_by_Step.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day03b_Spam_Filter_Step_by_Step.ipynb) |
 | 4 | Statistics: centre, spread, skew; normalisation vs standardisation; sampling; Central Limit Theorem; confidence intervals; hypothesis tests; A/B testing | Scaling real features (k-NN 93% → 98%) and a CLT simulation on Titanic fares | [Notebook](notebooks/Day04_Statistics.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day04_Statistics.ipynb) |
 | 5 | Linear algebra: vectors, L1/L2/L∞ norms, dot product and cosine similarity, matrices, transformations and determinants, inverse, rank, eigenvectors and PCA | Rotating, scaling and shearing a photo with matrices; PCA on 30 tumour features | [Notebook](notebooks/Day05_Linear_Algebra.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day05_Linear_Algebra.ipynb) |
+| 6 | Calculus: derivatives and rules, chain rule, partial derivatives and gradients, convexity, least-squares error, gradient descent (batch and mini-batch), integration | Gradient descent from scratch fitting tip vs bill, plus a 10-feature version on diabetes data | [Notebook](notebooks/Day06_Calculus.ipynb) · [Colab](https://colab.research.google.com/github/sgoel2718/ml-30-days/blob/main/notebooks/Day06_Calculus.ipynb) |
 
-Upcoming: calculus (Day 6), then classical ML, deep learning, transformers, RAG and deployment. See the plan for the full schedule.
+Upcoming: the AI/ML overview and data (Day 7), then classical ML, deep learning, transformers, RAG and deployment. See the plan for the full schedule.
 
 ## Projects
 
