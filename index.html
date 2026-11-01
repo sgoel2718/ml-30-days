@@ -18,7 +18,7 @@
   --board:#e9ecef; --board-ink:#1d232b; --muted:#5b6672; --line:#cfd5db; --chip:#ffffff; --chip-on:#1d232b; --chip-on-ink:#ffffff;
   --card:#ffffff; --card-soft:#f4f6f8; --accent:#2f6fb0;
   --n-concept:#cfe6ff; --n-pitfall:#ffd0d4; --n-code:#fff1a8; --n-rule:#d4f2cc;
-  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --dP:#c2456b;
+  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --d5:#1f8f8f; --dP:#c2456b;
   --lv-basic:#d4f2cc; --lv-mid:#fff1a8; --lv-adv:#ffd0d4;
   --n-ink:#1f2328; --n-soft:#4a525c; --code-bg:rgba(0,0,0,.07); --shadow:0 1px 2px rgba(20,30,40,.12),0 6px 14px rgba(20,30,40,.10);
   --f-note:"Kalam","Segoe Print","Comic Sans MS",cursive;
@@ -29,14 +29,14 @@
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}
 
@@ -176,8 +176,8 @@ details.card .body{padding:0 18px 14px 34px;max-width:82ch}
 
 <script>
 const R = String.raw;
-const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", P:"Project · TextPulse"};
-const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", P:"TextPulse: real-time spam & sentiment"};
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", 5:"Day 5 · Linear algebra", P:"Project · TextPulse"};
+const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", 5:"Linear algebra: vectors to PCA", P:"TextPulse: real-time spam & sentiment"};
 const TYPES = {concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}};
 const LEVELS = {basic:"Basic", mid:"Intermediate", adv:"Advanced"};
 const SUBS = {
@@ -1713,6 +1713,240 @@ INTERVIEW.push(
   {id:"i4-skew", day:4, level:"adv", q:"Does standardising a feature make it normally distributed?",
    say:R`No. Standardising only shifts and rescales; the shape, including skewness, stays exactly the same. To reduce skew you need a non-linear transform such as log, square root, or Box-Cox/Yeo-Johnson.`,
    a:R`<p>In the notebook, <code>mean area</code> had skew 1.526 before and after StandardScaler. Titanic fare's skew went from 4.79 to 0.39 with log1p. scikit-learn's <code>PowerTransformer</code> does Yeo-Johnson automatically. Many models don't need normal features at all; it matters most for linear models' residuals and for distance-based methods.</p>`},
+);
+
+// ===================== Day 5: Linear algebra =====================
+NOTES.push(
+  {id:"d5-vector", day:5, type:"concept", title:"A row is a vector",
+   body:`<p>One sample = one vector (data view) = one arrow (geometry view). A dataset is an (n samples, d features) matrix.</p>`},
+  {id:"d5-norms", day:5, type:"concept", title:"Three norms",
+   body:`<table><tr><td>L2</td><td>√Σx² · straight line · Ridge</td></tr><tr><td>L1</td><td>Σ|x| · city blocks · Lasso</td></tr><tr><td>L∞</td><td>max |x| · worst coordinate</td></tr></table><p>[3, −4] → 5, 7, 4.</p>`},
+  {id:"d5-lasso", day:5, type:"rule", title:"Why Lasso zeroes weights",
+   body:`<p>The L1 ball is a diamond with corners on the axes; the best point often lands on a corner, where some weights are exactly 0.</p>`},
+  {id:"d5-dot", day:5, type:"concept", title:"Dot product = similarity",
+   body:`<p>u·v = Σuᵢvᵢ = ‖u‖‖v‖cos θ. Positive = same way, 0 = perpendicular, negative = opposite. A linear model is <code>x @ w + b</code>.</p>`},
+  {id:"d5-cosine", day:5, type:"code", title:"All pairwise similarities",
+   body:`<pre><code>V = TfidfVectorizer().fit_transform(docs)
+sim = (V @ V.T).toarray()</code></pre><p>TF-IDF rows are unit length, so dot = cosine.</p>`},
+  {id:"d5-matmul", day:5, type:"rule", title:"Matrix multiply shapes",
+   body:`<p>(n, d) @ (d, k) → (n, k). Inner sizes must match. Entry (i, j) = row i · column j. <code>*</code> is element-wise; <code>@</code> is matrix multiply.</p>`},
+  {id:"d5-order", day:5, type:"pitfall", title:"Order matters",
+   body:`<p>A @ B ≠ B @ A. "Do A, then B" is the single matrix <b>B @ A</b> (rightmost acts first).</p>`},
+  {id:"d5-columns", day:5, type:"rule", title:"Read a matrix by its columns",
+   body:`<p>Column 1 = where [1, 0] lands; column 2 = where [0, 1] lands. Rotate θ: [[cos, −sin], [sin, cos]].</p>`},
+  {id:"d5-det", day:5, type:"concept", title:"Determinant = area scale",
+   body:`<table><tr><td>det = 1</td><td>rotation, shear: area kept</td></tr><tr><td>det &lt; 0</td><td>mirror flip</td></tr><tr><td>det = 0</td><td>squashed flat: no inverse</td></tr></table>`},
+  {id:"d5-inverse", day:5, type:"code", title:"Solve, don't invert",
+   body:`<pre><code>x = np.linalg.solve(A, b)   # not inv(A) @ b</code></pre><p>Faster and more accurate. Image warps use the inverse to look up each output pixel's source.</p>`},
+  {id:"d5-cond", day:5, type:"pitfall", title:"Nearly singular = unstable",
+   body:`<p>Condition number 40,002: changing b by 0.0001 moved x from [1, 1] to [0, 2].</p>`},
+  {id:"d5-rank", day:5, type:"concept", title:"Rank = independent columns",
+   body:`<p>Titanic [1, sibsp, parch, family_size] has rank 3 of 4: family_size = 1 + sibsp + parch. Drop a column or regularise.</p>`},
+  {id:"d5-dummy", day:5, type:"pitfall", title:"Dummy variable trap",
+   body:`<p>All one-hot columns + an intercept are linearly dependent (they sum to 1). Use <code>drop_first=True</code>.</p>`},
+  {id:"d5-eigen", day:5, type:"concept", title:"Eigenvector: direction kept",
+   body:`<p>Av = λv: A only stretches v by λ. Symmetric matrices (covariance) → use <code>np.linalg.eigh</code>.</p>`},
+  {id:"d5-pca", day:5, type:"rule", title:"PCA in three lines",
+   body:`<pre><code>Xs = StandardScaler().fit_transform(X)
+vals, vecs = np.linalg.eigh(np.cov(Xs, rowvar=False))
+Z = Xs @ vecs[:, ::-1][:, :2]</code></pre><p>Breast cancer: 2 of 30 directions keep 63%.</p>`},
+);
+
+FORMULAS.push(
+  {id:"f5-l2", day:5, name:"L2 (Euclidean) norm and distance",
+   tex:R`\lVert x \rVert_2 = \sqrt{\textstyle\sum_i x_i^2}, \qquad d(a,b) = \lVert a - b \rVert_2`,
+   symbols:[[R`x_i`,"the i-th coordinate"]],
+   example:R`‖[3, −4]‖₂ = √(9 + 16) = <b>5</b>. Distance from [1, 1] to [4, 5] = ‖[−3, −4]‖ = <b>5</b>.<pre><code>np.linalg.norm(x)</code></pre>`,
+   use:"Straight-line distance: k-NN, k-means, Ridge (L2) regularisation. Scale features first (Day 4)."},
+  {id:"f5-l1", day:5, name:"L1 (Manhattan) norm",
+   tex:R`\lVert x \rVert_1 = \sum_i |x_i|`,
+   symbols:[[R`|x_i|`,"absolute value"]],
+   example:R`‖[3, −4]‖₁ = 3 + 4 = <b>7</b>.<pre><code>np.linalg.norm(x, 1)</code></pre>`,
+   use:"Lasso regularisation (drives weights to exactly 0), robust distances, mean absolute error."},
+  {id:"f5-linf", day:5, name:"L∞ (max) norm",
+   tex:R`\lVert x \rVert_\infty = \max_i |x_i|`,
+   symbols:[],
+   example:R`‖[3, −4]‖∞ = <b>4</b>.<pre><code>np.linalg.norm(x, np.inf)</code></pre>`,
+   use:"The worst single coordinate: maximum error, and how far an adversarial attack may change any one pixel."},
+  {id:"f5-unit", day:5, name:"Unit vector (normalising)",
+   tex:R`\hat{x} = \frac{x}{\lVert x \rVert_2}`,
+   symbols:[[R`\hat{x}`,"same direction, length 1"]],
+   example:R`[3, −4] / 5 = <b>[0.6, −0.8]</b>.`,
+   use:"Comparing directions only: TF-IDF rows and text embeddings are normalised so dot product = cosine similarity."},
+  {id:"f5-dot", day:5, name:"Dot product",
+   tex:R`u \cdot v = \sum_i u_i v_i = \lVert u \rVert\,\lVert v \rVert \cos\theta`,
+   symbols:[[R`\theta`,"angle between the vectors"]],
+   example:R`[3, 1]·[1, 2] = 3 + 2 = <b>5</b>. A linear model: features [0.6, 0, 0.8] · weights [1.2, −1.5, 0.9] − 0.4 = <b>1.04</b> → sigmoid 0.739.<pre><code>u @ v</code></pre>`,
+   use:"Every linear model and neural-network layer; similarity; projections."},
+  {id:"f5-cos", day:5, name:"Cosine similarity",
+   tex:R`\cos\theta = \frac{u \cdot v}{\lVert u \rVert\,\lVert v \rVert} \in [-1, 1]`,
+   symbols:[[R`1`,"same direction"],[R`0`,"unrelated (perpendicular)"],[R`-1`,"opposite"]],
+   example:R`[3, 1] and [1, 2]: 5 / (√10 × √5) = <b>0.707</b> → 45°. "win a free prize now" vs "claim your free prize today" (TF-IDF): <b>0.35</b>; vs "team meeting moved to friday": 0.`,
+   use:"Search, recommendations, duplicate detection and RAG retrieval: find the most similar vectors."},
+  {id:"f5-proj", day:5, name:"Projection of v onto u",
+   tex:R`\operatorname{proj}_u v = \frac{u \cdot v}{u \cdot u}\, u`,
+   symbols:[[R`\frac{u\cdot v}{u\cdot u}`,"how many copies of u fit in v's shadow"]],
+   example:R`v = [2, 3] onto u = [1, 0]: (2/1)·[1, 0] = <b>[2, 0]</b>, the shadow of v on the x-axis.`,
+   use:"Linear regression is the projection of y onto the space spanned by the features; PCA projects data onto eigenvectors."},
+  {id:"f5-matmul", day:5, name:"Matrix multiplication",
+   tex:R`(AB)_{ij} = \sum_{k} A_{ik} B_{kj}, \qquad (n \times d)(d \times k) \to (n \times k)`,
+   symbols:[[R`A_{ik}`,"row i, column k of A"]],
+   example:R`Row 0 of A = [1, 2], column 2 of B = [2, 3] → (AB)₀₂ = 2 + 6 = <b>8</b>. Predictions for every sample at once: <code>X @ w + b</code>.`,
+   use:"Batch predictions, neural-network layers (inputs @ weights), chaining transformations."},
+  {id:"f5-transpose", day:5, name:"Transpose rules",
+   tex:R`(A^{\mathsf T})_{ij} = A_{ji}, \qquad (AB)^{\mathsf T} = B^{\mathsf T}A^{\mathsf T}`,
+   symbols:[],
+   example:R`A (3×2) → Aᵀ (2×3). XᵀX for a (891 × 4) data matrix is a small (4 × 4) matrix.`,
+   use:"Making shapes line up; covariance (XᵀX/(n−1) after centring); the normal equation."},
+  {id:"f5-rot", day:5, name:"Rotation, scaling and shear matrices",
+   tex:R`R_\theta = \begin{bmatrix}\cos\theta & -\sin\theta\\ \sin\theta & \cos\theta\end{bmatrix} \quad S = \begin{bmatrix}s_x & 0\\ 0 & s_y\end{bmatrix} \quad H = \begin{bmatrix}1 & k\\ 0 & 1\end{bmatrix}`,
+   symbols:[[R`\theta`,"angle, anticlockwise"],[R`s_x, s_y`,"scale factors"],[R`k`,"shear amount"]],
+   example:R`Rotate [1, 0] by 90°: [cos 90, sin 90] = <b>[0, 1]</b>. Shear k = 0.8 moves [0, 2] to <b>[1.6, 2]</b>.`,
+   use:"Image augmentation, graphics, and understanding what any 2×2 matrix does: read its columns."},
+  {id:"f5-det", day:5, name:"Determinant of a 2×2 matrix",
+   tex:R`\det\begin{bmatrix}a & b\\ c & d\end{bmatrix} = ad - bc, \qquad \det(AB) = \det A \cdot \det B`,
+   symbols:[[R`|\det|`,"area scale factor"],[R`\det < 0`,"orientation flipped"],[R`\det = 0`,"squashed flat → no inverse"]],
+   example:R`Scale (1.5, 0.5): 0.75. Shear [[1, 0.8], [0, 1]]: 1 − 0 = <b>1</b>. [[1, 2], [2, 4]]: 4 − 4 = <b>0</b> (singular).`,
+   use:"Checking whether a matrix can be inverted, and how a transformation changes areas or volumes."},
+  {id:"f5-inv", day:5, name:"Inverse of a 2×2 matrix",
+   tex:R`A^{-1} = \frac{1}{ad - bc}\begin{bmatrix} d & -b\\ -c & a\end{bmatrix}, \qquad A^{-1}A = I`,
+   symbols:[[R`I`,"identity matrix"]],
+   example:R`A = [[2, 1], [1, 3]], det = 5 → A⁻¹ = [[0.6, −0.2], [−0.2, 0.4]].`,
+   use:"Undoing a transformation (image warping looks up sources with M⁻¹). For solving equations, use solve() instead."},
+  {id:"f5-solve", day:5, name:"Linear system and the normal equation",
+   tex:R`Ax = b \;\Rightarrow\; x = A^{-1}b, \qquad \text{least squares: } w = (X^{\mathsf T}X)^{-1}X^{\mathsf T}y`,
+   symbols:[[R`X`,"data matrix (with a column of 1s for the intercept)"],[R`y`,"targets"],[R`w`,"regression weights"]],
+   example:R`2x + y = 5, x + 3y = 10 → <b>x = 1, y = 3</b>.<pre><code>np.linalg.solve(A, b)</code></pre>`,
+   use:"Linear regression's closed-form solution (Day 8). It fails when XᵀX is singular (multicollinearity)."},
+  {id:"f5-cond", day:5, name:"Condition number",
+   tex:R`\kappa(A) = \lVert A \rVert\,\lVert A^{-1} \rVert = \frac{\sigma_{\max}}{\sigma_{\min}}`,
+   symbols:[[R`\sigma`,"singular values (how much A stretches in each direction)"]],
+   example:R`[[1, 1], [1, 1.0001]]: κ = <b>40,002</b>. Changing b by 0.0001 moved the solution from [1, 1] to [0, 2].`,
+   use:"Diagnosing unstable regressions: a large κ for XᵀX means near-duplicate features."},
+  {id:"f5-rank", day:5, name:"Rank",
+   tex:R`\operatorname{rank}(X) = \text{number of linearly independent columns} \le \min(n, d)`,
+   symbols:[[R`n, d`,"rows, columns"]],
+   example:R`Titanic [intercept, sibsp, parch, family_size]: rank <b>3</b> of 4, because family_size = 1 + sibsp + parch.<pre><code>np.linalg.matrix_rank(X)</code></pre>`,
+   use:"Detecting redundant features (multicollinearity, the dummy-variable trap) before fitting linear models."},
+  {id:"f5-eigen", day:5, name:"Eigenvalues and eigenvectors",
+   tex:R`A v = \lambda v, \qquad \det(A - \lambda I) = 0`,
+   symbols:[[R`v`,"eigenvector: a direction A only stretches"],[R`\lambda`,"eigenvalue: the stretch factor"]],
+   example:R`A = [[3, 1], [0, 2]]: λ = 3 with v = [1, 0]; λ = 2 with v = [−0.707, 0.707]. Check: A·[1, 0] = [3, 0] = 3·[1, 0].`,
+   use:"PCA, PageRank, stability of systems, spectral clustering."},
+  {id:"f5-pca", day:5, name:"PCA via the covariance matrix",
+   tex:R`\Sigma = \frac{1}{n-1} X_c^{\mathsf T} X_c, \quad \Sigma v_k = \lambda_k v_k, \quad \text{explained}_k = \frac{\lambda_k}{\sum_j \lambda_j}, \quad Z = X_c\,[v_1 \cdots v_m]`,
+   symbols:[[R`X_c`,"centred (usually standardised) data"],[R`\lambda_k`,"variance along direction k"],[R`Z`,"data in the new m-dimensional space"]],
+   example:R`Breast cancer (30 standardised features): first eigenvalues explain 44.3%, 19.0%, 9.4%… → 2 components keep <b>63.2%</b>, 10 keep <b>95.2%</b>. Matches sklearn's PCA exactly.`,
+   use:"Reducing dimensions for visualisation, speed and noise removal (Day 13)."},
+);
+
+LESSONS.push(
+  {id:"l5-vectors", day:5, title:"1. Vectors and norms",
+   body:R`<p>A vector is an ordered list of numbers, seen either as <b>data</b> (one customer: [age, income, visits]; one email: 200,000 TF-IDF values) or as <b>geometry</b> (an arrow). Adding vectors puts arrows head to tail; multiplying by a number stretches, shrinks or flips them. A <b>linear combination</b> a·u + b·v mixes them, and the set of all mixes is the <b>span</b>.</p>
+<h4>Norms: the size of a vector</h4>
+<table><tr><th>Norm</th><th>[3, −4]</th><th>Shape of "norm = 1"</th><th>ML use</th></tr>
+<tr><td>L2 √Σx²</td><td>5</td><td>circle</td><td>Euclidean distance, Ridge</td></tr>
+<tr><td>L1 Σ|x|</td><td>7</td><td>diamond</td><td>Manhattan distance, Lasso</td></tr>
+<tr><td>L∞ max|x|</td><td>4</td><td>square</td><td>worst-case error</td></tr></table>
+<p><b>Why Lasso creates zero weights</b>: regularisation keeps the weights inside a "ball". The L1 ball's corners sit on the axes, where some coordinates are exactly 0, and the optimum tends to land on a corner. The round L2 ball has no corners, so Ridge shrinks weights without zeroing them.</p>
+<p>Distance between two points is the norm of their difference. Because distances add up feature by feature, unscaled features with big units dominate, which is why k-NN improved from 93% to 98% after scaling (Day 4).</p>`},
+  {id:"l5-dot", day:5, title:"2. The dot product, cosine similarity and projection",
+   body:R`\[u \cdot v = \sum_i u_i v_i = \lVert u\rVert \lVert v\rVert \cos\theta\]
+<p><b>Algebra view</b>: multiply matching entries and add. A linear model's score is exactly this: features · weights + bias. TextPulse computes one dot product per message.</p>
+<p><b>Geometry view</b>: how much two vectors point the same way. [3, 1]·[1, 2] = 5, and cos θ = 0.707, so the angle is 45°. Perpendicular vectors have a dot product of 0 (they're "orthogonal").</p>
+<h4>Cosine similarity in practice</h4>
+<pre><code>V = TfidfVectorizer().fit_transform(docs)   # unit-length rows
+sim = (V @ V.T).toarray()                   # every pair at once</code></pre>
+<p>"win a free prize now" scored 0.35 with "claim your free prize today" and 0 with the team messages, which paired with each other at 0.28. Search engines, recommendations, duplicate detection and RAG retrieval all rank by this number, usually with neural embeddings instead of TF-IDF.</p>
+<h4>Projection</h4>
+<p>The projection of v onto u is (u·v / u·u)·u: v's "shadow" along u. Linear regression projects the target onto the space of the features, and PCA projects data onto its main directions.</p>`},
+  {id:"l5-matrix", day:5, title:"3. Matrices and matrix multiplication",
+   body:R`<p>A matrix has shape (rows, columns). For data: (samples, features). <b>A @ B</b> needs matching inner sizes, (n, d) @ (d, k) → (n, k), and entry (i, j) is the dot product of row i of A with column j of B.</p>
+<pre><code>X @ w + b      # (n, d) @ (d,) → n predictions in one call
+X @ W          # (n, 3) @ (3, 4) → a neural-network layer with 4 neurons
+A * B          # element-wise: a different operation!</code></pre>
+<ul><li><b>Not commutative</b>: A @ B ≠ B @ A in general (shapes may not even allow it).</li>
+<li><b>Identity</b> I leaves anything unchanged; <b>transpose</b> swaps rows and columns, and (AB)ᵀ = BᵀAᵀ.</li>
+<li>Vectorised matrix code is how NumPy, PyTorch and GPUs reach their speed: one big multiplication instead of millions of Python loops.</li></ul>`},
+  {id:"l5-transform", day:5, title:"4. Matrices as transformations, and the determinant",
+   body:R`<p>A 2×2 matrix moves every point in the plane, keeping lines straight and the origin fixed. To read it, look at its <b>columns</b>: they're where [1, 0] and [0, 1] land.</p>
+<table><tr><th>Matrix</th><th>Effect</th><th>det</th></tr>
+<tr><td>[[1.5, 0], [0, 0.5]]</td><td>stretch x, squash y</td><td>0.75</td></tr>
+<tr><td>[[cos θ, −sin θ], [sin θ, cos θ]]</td><td>rotate by θ</td><td>1</td></tr>
+<tr><td>[[1, 0.8], [0, 1]]</td><td>shear</td><td>1</td></tr>
+<tr><td>[[1, 0], [0, −1]]</td><td>mirror</td><td>−1</td></tr>
+<tr><td>[[1, 0], [0, 0]]</td><td>flatten onto x</td><td>0</td></tr></table>
+<p>The <b>determinant</b> is the area scale factor. Negative means a flip; zero means the plane was squashed into a line or point, so information is lost and there's no way back (no inverse).</p>
+<p><b>Composition</b>: "do A, then B" is the single matrix B @ A. Rotate-then-shear and shear-then-rotate give different matrices, but det(B @ A) = det(B)·det(A) either way.</p>`},
+  {id:"l5-image", day:5, title:"5. Live demo: transforming an image with matrices",
+   body:R`<p>An image is a grid of pixel colours. To rotate, scale or shear it, transform the pixel <b>positions</b> around the image centre.</p>
+<p><b>Inverse mapping</b>: pushing source pixels forward leaves gaps, because results fall between grid points. Instead, for every <b>output</b> pixel, compute where it came from with <b>M⁻¹</b> and copy that colour:</p>
+<pre><code>ys, xs = np.mgrid[0:h, 0:w]                         # every output pixel
+out = np.vstack([xs.ravel(), ys.ravel()]) - centre  # as (x, y) columns
+src = np.linalg.inv(M) @ out + centre               # where it came from
+# copy img[src_y, src_x] (nearest pixel) into the output</code></pre>
+<p>The hand-written version agreed with SciPy's <code>ndimage.affine_transform</code> on 97% of pixels (SciPy blends neighbouring pixels for smoother edges). Each result's determinant matched what you see: rotation and shear keep the area (1.00), a 60% horizontal squeeze has det 0.60, and a mirror has −1.</p>
+<p><b>Where it's used</b>: data augmentation for image models (Day 18 trains on randomly rotated, flipped and sheared copies so the model learns that a tilted cat is still a cat), photo editors and graphics engines. Note: image rows grow downwards, so a positive angle turns the picture clockwise on screen.</p>`},
+  {id:"l5-inverse", day:5, title:"6. Inverse, solving systems, and ill-conditioning",
+   body:R`<p>The inverse A⁻¹ undoes A (A⁻¹A = I). It exists only for square matrices with det ≠ 0.</p>
+<pre><code>A = np.array([[2, 1], [1, 3]]); b = np.array([5, 10])
+np.linalg.solve(A, b)     # [1., 3.]  — use solve, not inv(A) @ b</code></pre>
+<p><b>Singular</b> matrices (det = 0) have no inverse: [[1, 2], [2, 4]] states the same equation twice. <b>Nearly singular</b> ones are worse in a way, because they appear to work but give unstable answers. [[1, 1], [1, 1.0001]] has a condition number of 40,002: changing b from [2, 2.0001] to [2, 2.0002] moved the solution from [1, 1] to [0, 2].</p>
+<p><b>Why ML cares</b>: linear regression's exact solution is w = (XᵀX)⁻¹Xᵀy. Near-duplicate features make XᵀX nearly singular, so the weights swing wildly and stop being interpretable. Ridge regression adds λI to XᵀX, which makes it safely invertible.</p>`},
+  {id:"l5-rank", day:5, title:"7. Rank and linear dependence: multicollinearity",
+   body:R`<p>Vectors are <b>linearly dependent</b> when one can be built from the others. The <b>rank</b> of a matrix counts the truly independent columns.</p>
+<ul><li>[a, b, a + b] has rank 2: the third column adds nothing.</li>
+<li>Titanic [intercept, sibsp, parch, family_size] has rank 3 of 4, because family_size = 1·intercept + sibsp + parch. The condition number of XᵀX was 6.9 × 10¹⁶, effectively singular.</li></ul>
+<h4>Consequences and fixes</h4>
+<p>With a rank-deficient X, infinitely many weight vectors give identical predictions, so the model can't decide how to split credit between the redundant columns. Fixes: drop one of the redundant columns, regularise (Ridge), or reduce dimensions (PCA).</p>
+<p><b>Dummy variable trap</b>: one-hot columns for every category always sum to 1, which equals the intercept column. <code>pd.get_dummies(df, drop_first=True)</code> drops one category to restore full rank.</p>
+<p>Advanced preview: LoRA, the standard way to fine-tune large language models (Day 26), deliberately uses <b>low-rank</b> weight updates to train only a tiny fraction of the parameters.</p>`},
+  {id:"l5-eigen", day:5, title:"8. Eigenvalues, eigenvectors and PCA",
+   body:R`\[A v = \lambda v\]
+<p>Most vectors get turned by a matrix; <b>eigenvectors</b> only get stretched, by their <b>eigenvalue</b> λ. For A = [[3, 1], [0, 2]]: [1, 0] is stretched by 3, and [−0.707, 0.707] by 2.</p>
+<h4>PCA = eigenvectors of the covariance matrix</h4>
+<ol><li>Standardise the data (otherwise large-unit features dominate).</li>
+<li>Compute the covariance matrix (d × d, symmetric).</li>
+<li>Its eigenvectors are the directions of greatest variance; each eigenvalue is the variance along that direction. Use <code>np.linalg.eigh</code> for symmetric matrices.</li>
+<li>Sort by eigenvalue, keep the top m, and project: Z = X @ V[:, :m].</li></ol>
+<p>On the 30-feature breast-cancer data, the first two directions keep 63.2% of the variance (10 keep 95.2%), and the 2-D scatter almost separates malignant from benign without ever seeing the labels. The results matched scikit-learn's <code>PCA</code> exactly (up to the sign of each direction, which is arbitrary).</p>
+<p><b>Uses</b>: visualising high-dimensional data, compressing features, removing noise and multicollinearity (the components are uncorrelated). Day 13 covers PCA in full.</p>`},
+);
+
+INTERVIEW.push(
+  {id:"i5-norms", day:5, level:"basic", q:"What's the difference between L1 and L2 norms? Where are they used in ML?",
+   say:R`L2 is the straight-line length, the square root of the sum of squares; L1 is the sum of absolute values, like walking city blocks. L2 is used for Euclidean distance and Ridge regularisation; L1 for Manhattan distance and Lasso, which drives some weights to exactly zero.`,
+   a:R`<p>[3, −4]: L2 = 5, L1 = 7, L∞ = 4. Geometric reason Lasso selects features: the L1 "ball" is a diamond with corners on the axes, and constrained optima tend to land on a corner, where some coordinates are 0. L2 squares errors, so it punishes large values more; L1 is more robust to outliers.</p>`},
+  {id:"i5-dot", day:5, level:"basic", q:"What does the dot product tell you?",
+   say:R`Algebraically it's the sum of element-wise products; geometrically it's the product of the lengths times the cosine of the angle, so it measures how aligned two vectors are. Zero means perpendicular. Every linear model's prediction is a dot product of features and weights.`,
+   a:R`<p>[3, 1]·[1, 2] = 5 → cos θ = 0.707 → 45°. Dividing by the lengths gives cosine similarity, used to compare documents and embeddings. In transformers (Day 24), attention scores are dot products between query and key vectors.</p>`},
+  {id:"i5-matmul", day:5, level:"basic", q:"What are the rules for multiplying two matrices?",
+   say:R`The inner dimensions must match: (n × d) times (d × k) gives (n × k). Each entry is the dot product of a row of the first with a column of the second. It isn't commutative, and it's different from element-wise multiplication.`,
+   a:R`<p>In NumPy, <code>@</code> is matrix multiplication and <code>*</code> is element-wise. Why it matters: predictions for a whole dataset are one call, <code>X @ w + b</code>, and a neural-network layer is <code>inputs @ W</code>. Most shape errors in deep learning come from mismatched inner dimensions.</p>`},
+  {id:"i5-cosine", day:5, level:"mid", q:"Why use cosine similarity instead of Euclidean distance for text?",
+   say:R`Cosine compares direction and ignores length, so a long document and a short one about the same topic still look similar. Euclidean distance is affected by length and word counts. For unit-length vectors the two are directly related, so ranking by either gives the same order.`,
+   a:R`<p>For unit vectors, ‖a − b‖² = 2 − 2 cos θ, so smaller distance means higher cosine. TF-IDF rows from scikit-learn are already L2-normalised, which is why <code>V @ V.T</code> gives cosine similarities directly. Same idea for sentence embeddings in RAG (Day 28).</p>`},
+  {id:"i5-det", day:5, level:"mid", q:"What does the determinant mean geometrically? What does det = 0 mean?",
+   say:R`It's the factor by which the matrix scales areas (or volumes). A negative value means orientation is flipped, like a mirror. Zero means space is squashed into a lower dimension, so the transformation loses information and has no inverse.`,
+   a:R`<p>Rotation and shear: det = 1. Scale (1.5, 0.5): 0.75. Projection onto a line: 0. det(AB) = det(A)·det(B). In practice, don't test for exactly 0 with floats; use the rank or the condition number.</p>`},
+  {id:"i5-inverse", day:5, level:"mid", q:"Why use np.linalg.solve instead of computing the inverse?",
+   say:R`Solving directly is faster and numerically more accurate. Computing the inverse does more work and amplifies rounding errors, especially for ill-conditioned matrices. You almost never need the inverse itself, just its effect on a vector.`,
+   a:R`<p>solve() uses an LU factorisation. For regression, libraries use QR or SVD rather than (XᵀX)⁻¹, because forming XᵀX squares the condition number. Condition-number example: κ = 40,002, and a change of 0.0001 in b moved the answer from [1, 1] to [0, 2].</p>`},
+  {id:"i5-rank", day:5, level:"mid", q:"What is matrix rank, and what is multicollinearity?",
+   say:R`Rank is the number of linearly independent columns. If a feature is an exact or near combination of others, the data matrix is rank-deficient or ill-conditioned; that's multicollinearity. Linear-model coefficients become unstable and uninterpretable, though predictions can still be fine.`,
+   a:R`<p>Example: Titanic with family_size = sibsp + parch + 1 alongside an intercept, sibsp and parch has rank 3 of 4. Detect it with the rank, the condition number of XᵀX, or the variance inflation factor (VIF). Fix it by dropping a column, using Ridge, or PCA. The dummy variable trap is the classic case: drop one category.</p>`},
+  {id:"i5-eigen", day:5, level:"mid", q:"What are eigenvalues and eigenvectors? Give an ML application.",
+   say:R`An eigenvector of a matrix is a direction that the matrix only stretches, not turns: Av = λv, where λ is the stretch factor. In PCA, the eigenvectors of the covariance matrix are the directions of greatest variance, and the eigenvalues are how much variance each one holds.`,
+   a:R`<p>Breast-cancer data: the top 2 of 30 directions keep 63% of the variance. Other uses: PageRank (the dominant eigenvector of the link matrix), spectral clustering, and analysing the stability of systems and gradient descent (the Hessian's eigenvalues, Day 6).</p>`},
+  {id:"i5-pca", day:5, level:"adv", q:"Walk me through how PCA works. Why standardise first?",
+   say:R`Centre and usually standardise the features, compute the covariance matrix, find its eigenvectors and eigenvalues, sort them by eigenvalue, keep the top k, and project the data onto them. Standardising matters because PCA chases variance, and unscaled large-unit features would dominate just because of their units.`,
+   a:R`<p>In practice libraries use the SVD of the centred data matrix, which is more stable than forming the covariance. Choose k from the cumulative explained variance (e.g. 95%). Limitations: it's linear, components are hard to interpret, it ignores labels (so it can drop directions that matter for prediction), and it's sensitive to outliers. Fit PCA on training data only.</p>`},
+  {id:"i5-image", day:5, level:"adv", q:"How would you rotate an image using a matrix? Why use the inverse?",
+   say:R`Treat pixel positions as vectors around the image centre and apply a rotation matrix. In practice you loop over output pixels and use the inverse matrix to find which source pixel each came from, then interpolate. Mapping forward leaves holes, because rotated positions fall between grid points.`,
+   a:R`<p>Use the matrix [[cos θ, −sin θ], [sin θ, cos θ]] and add translations to rotate around the centre; with homogeneous coordinates, this becomes one 3×3 affine matrix. Interpolation can be nearest-neighbour (fast, blocky) or bilinear (smooth). This is how data augmentation creates rotated, sheared and flipped training images.</p>`},
+  {id:"i5-svd", day:5, level:"adv", q:"What is SVD and how does it relate to eigen-decomposition?",
+   say:R`Singular Value Decomposition factors any matrix as U Σ Vᵀ: a rotation, a scaling along perpendicular axes, then another rotation. It works for any shape of matrix. Its singular values are the square roots of the eigenvalues of AᵀA, and V holds AᵀA's eigenvectors.`,
+   a:R`<p>Uses: PCA (SVD of the centred data), the condition number (largest ÷ smallest singular value), low-rank approximation for compression and recommender systems (keep the top k singular values), pseudo-inverses for least squares, and LSA topic models on TF-IDF matrices.</p>`},
 );
 
 
