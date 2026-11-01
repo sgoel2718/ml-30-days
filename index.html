@@ -18,7 +18,7 @@
   --board:#e9ecef; --board-ink:#1d232b; --muted:#5b6672; --line:#cfd5db; --chip:#ffffff; --chip-on:#1d232b; --chip-on-ink:#ffffff;
   --card:#ffffff; --card-soft:#f4f6f8; --accent:#2f6fb0;
   --n-concept:#cfe6ff; --n-pitfall:#ffd0d4; --n-code:#fff1a8; --n-rule:#d4f2cc;
-  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --d5:#1f8f8f; --d6:#b8641d; --d7:#4b6cb7; --dP:#c2456b;
+  --d1:#3b82c4; --d2:#c9a227; --d3:#3f9a4a; --d4:#7b5cc4; --d5:#1f8f8f; --d6:#b8641d; --d7:#4b6cb7; --d8:#8a3f8a; --dP:#c2456b;
   --lv-basic:#d4f2cc; --lv-mid:#fff1a8; --lv-adv:#ffd0d4;
   --n-ink:#1f2328; --n-soft:#4a525c; --code-bg:rgba(0,0,0,.07); --shadow:0 1px 2px rgba(20,30,40,.12),0 6px 14px rgba(20,30,40,.10);
   --f-note:"Kalam","Segoe Print","Comic Sans MS",cursive;
@@ -29,14 +29,14 @@
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --d6:#e0954f; --d7:#8aa3e6; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --d6:#e0954f; --d7:#8aa3e6; --d8:#c98bc9; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --board:#15191e; --board-ink:#e7ebef; --muted:#9aa5b1; --line:#2b323a; --chip:#1f252c; --chip-on:#e7ebef; --chip-on-ink:#15191e;
   --card:#1c2228; --card-soft:#232a31; --accent:#7fb3e6;
   --n-concept:#1e3550; --n-pitfall:#4a2429; --n-code:#463f1a; --n-rule:#21401f;
-  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --d6:#e0954f; --d7:#8aa3e6; --dP:#e07a9a;
+  --d1:#6aa7dc; --d2:#d9b84a; --d3:#6cc077; --d4:#a68ce6; --d5:#4fc2c2; --d6:#e0954f; --d7:#8aa3e6; --d8:#c98bc9; --dP:#e07a9a;
   --lv-basic:#21401f; --lv-mid:#463f1a; --lv-adv:#4a2429;
   --n-ink:#eef1f4; --n-soft:#c2cad3; --code-bg:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35); color-scheme:dark}
 
@@ -176,8 +176,8 @@ details.card .body{padding:0 18px 14px 34px;max-width:82ch}
 
 <script>
 const R = String.raw;
-const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", 5:"Day 5 · Linear algebra", 6:"Day 6 · Calculus", 7:"Day 7 · AI/ML & data", P:"Project · TextPulse"};
-const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", 5:"Linear algebra: vectors to PCA", 6:"Calculus & gradient descent", 7:"AI/ML overview, data & scraping", P:"TextPulse: real-time spam & sentiment"};
+const DAYS = {1:"Day 1 · Python", 2:"Day 2 · NumPy & Pandas", 3:"Day 3 · Probability", 4:"Day 4 · Statistics", 5:"Day 5 · Linear algebra", 6:"Day 6 · Calculus", 7:"Day 7 · AI/ML & data", 8:"Day 8 · ML principles", P:"Project · TextPulse"};
+const DAY_TITLES = {1:"Python proficiency", 2:"NumPy, Pandas & EDA", 3:"Probability & Naive Bayes", 4:"Statistics & hypothesis tests", 5:"Linear algebra: vectors to PCA", 6:"Calculus & gradient descent", 7:"AI/ML overview, data & scraping", 8:"Principles: CV, bias–variance, k-NN", P:"TextPulse: real-time spam & sentiment"};
 const TYPES = {concept:{label:"Concept"}, pitfall:{label:"Pitfall"}, code:{label:"Syntax"}, rule:{label:"Rule of thumb"}};
 const LEVELS = {basic:"Basic", mid:"Intermediate", adv:"Advanced"};
 const SUBS = {
@@ -2334,6 +2334,179 @@ INTERVIEW.push(
   {id:"i7-bandit", day:7, level:"adv", q:"What is the exploration–exploitation trade-off? How does a multi-armed bandit compare with an A/B test?",
    say:R`Exploitation uses the best-known option; exploration tries others to learn more. An A/B test explores evenly for a fixed time, then exploits. A bandit shifts traffic toward the better option as evidence builds, so it loses fewer conversions during the test, at the cost of less clean statistical inference.`,
    a:R`<p>In the ε-greedy demo, the best banner got 93% of traffic and earned 759 clicks vs about 533 for random allocation. More refined strategies: Upper Confidence Bound (explore options you're uncertain about) and Thompson sampling (sample from each option's posterior, Day 3's Bayes). Contextual bandits add user features.</p>`},
+);
+
+// ===================== Day 8: Principles of ML =====================
+NOTES.push(
+  {id:"d8-memory", day:8, type:"pitfall", title:"Training accuracy = memory",
+   body:`<p>1-NN on Wine: 100% on training data, 70% on unseen wines. Only held-out data measures skill.</p>`},
+  {id:"d8-split", day:8, type:"concept", title:"Train / validation / test",
+   body:`<table><tr><td>train</td><td>fit parameters</td></tr><tr><td>validation</td><td>choose settings</td></tr><tr><td>test</td><td>report once</td></tr></table><p>Tuning on the test set makes its score optimistic.</p>`},
+  {id:"d8-splitrules", day:8, type:"rule", title:"Split the right way",
+   body:`<p>Stratify classes · time series: past → future, never shuffle · groups (customers, patients) in one set only · fix the seed.</p>`},
+  {id:"d8-noisy", day:8, type:"pitfall", title:"One split is one dice roll",
+   body:`<p>Same 5-NN, 100 random splits of Wine: 0.907 to 1.000 accuracy.</p>`},
+  {id:"d8-cv", day:8, type:"code", title:"k-fold cross-validation",
+   body:`<pre><code>cv = StratifiedKFold(5, shuffle=True, random_state=8)
+cross_val_score(make_pipeline(StandardScaler(), KNN()), X, y, cv=cv)</code></pre><p>Report mean ± std. Scaler inside the pipeline.</p>`},
+  {id:"d8-splitters", day:8, type:"rule", title:"Pick the splitter",
+   body:`<table><tr><td>classification</td><td>StratifiedKFold</td></tr><tr><td>groups</td><td>GroupKFold</td></tr><tr><td>time</td><td>TimeSeriesSplit</td></tr></table>`},
+  {id:"d8-fit", day:8, type:"concept", title:"Under vs overfitting",
+   body:`<table><tr><td>underfit</td><td>high train + val error</td></tr><tr><td>overfit</td><td>low train, high val error</td></tr></table><p>Validation error is U-shaped in complexity.</p>`},
+  {id:"d8-bv", day:8, type:"concept", title:"Bias–variance",
+   body:`<p>Error = bias² + variance + noise. Degree 1: bias² 0.144. Degree 11: variance 0.63. Best: degree 3 (total 0.075).</p>`},
+  {id:"d8-levers", day:8, type:"rule", title:"Levers",
+   body:`<p><b>Cut variance:</b> more data, regularisation, simpler model, bagging. <b>Cut bias:</b> more features, more flexible model, boosting.</p>`},
+  {id:"d8-knn", day:8, type:"concept", title:"k-NN in one line",
+   body:`<p>Find the k closest training points, take a vote. No training step; all the cost is at prediction time.</p>`},
+  {id:"d8-k", day:8, type:"rule", title:"k is the complexity knob",
+   body:`<p>Small k → jagged, overfits. Large k → smooth, underfits; k = n predicts the majority everywhere. Choose k by CV.</p>`},
+  {id:"d8-knnscale", day:8, type:"pitfall", title:"k-NN without scaling",
+   body:`<p>Wine CV: 0.709 raw vs 0.967 standardised. Proline (278–1,680) drowned out every other feature.</p>`},
+  {id:"d8-curse", day:8, type:"pitfall", title:"Curse of dimensionality",
+   body:`<p>Nearest ÷ farthest distance: 0.02 in 2-D, 0.90 in 1,000-D. "Nearest" stops meaning much.</p>`},
+  {id:"d8-linear", day:8, type:"concept", title:"Linear classifier",
+   body:`<p>z = w·x + b; boundary where z = 0: a line, plane or hyperplane. Fast and interpretable; biased if classes need curves.</p>`},
+  {id:"d8-workflow", day:8, type:"rule", title:"The workflow",
+   body:`<p>Hold out test → pipeline → GridSearchCV on train → refit best → test <b>once</b>.</p>`},
+);
+
+FORMULAS.push(
+  {id:"f8-gap", day:8, name:"Generalisation gap",
+   tex:R`\text{gap} = \text{score}_{\text{train}} - \text{score}_{\text{validation}}`,
+   symbols:[],
+   example:R`Wine, 2 features: k = 1 → 1.00 − 0.79 = <b>0.21</b> (overfitting); k = 10 → 0.84 − 0.84 = <b>0</b>.`,
+   use:"Diagnosing overfitting: a large gap means variance; low scores on both mean bias."},
+  {id:"f8-kfold", day:8, name:"k-fold cross-validation score",
+   tex:R`\text{CV} = \frac{1}{K}\sum_{k=1}^{K} \text{score}\big(\text{model trained without fold } k,\ \text{fold } k\big)`,
+   symbols:[[R`K`,"number of folds (5 or 10)"]],
+   example:R`5-NN on Wine, 5 folds: 0.917, 0.972, 0.972, 1.000, 0.971 → <b>0.967 ± 0.027</b>.`,
+   use:"Estimating performance and choosing hyperparameters without wasting data on a single validation split."},
+  {id:"f8-bvdecomp", day:8, name:"Bias–variance decomposition",
+   tex:R`E\big[(y - \hat f(x))^2\big] = \underbrace{\big(E[\hat f(x)] - f(x)\big)^2}_{\text{bias}^2} + \underbrace{\operatorname{Var}\big(\hat f(x)\big)}_{\text{variance}} + \underbrace{\sigma^2}_{\text{noise}}`,
+   symbols:[[R`E[\hat f(x)]`,"the average prediction over many training sets"],[R`\sigma^2`,"irreducible noise in y"]],
+   example:R`Sine curve, 25 points, noise σ = 0.25 (σ² = 0.0625): degree 1 bias² 0.144 + variance 0.021; degree 3 0.003 + 0.010 → total <b>0.075</b> (best); degree 11 0.003 + 0.630.`,
+   use:"Explaining why models over- or underfit, and which lever (data, regularisation, complexity) will help."},
+  {id:"f8-knn", day:8, name:"k-NN prediction",
+   tex:R`\hat y(x) = \operatorname{mode}\{\,y_i : i \in N_k(x)\,\} \qquad \text{(regression: } \tfrac{1}{k}\textstyle\sum_{i \in N_k(x)} y_i\text{)}`,
+   symbols:[[R`N_k(x)`,"indices of the k training points closest to x"],[R`\operatorname{mode}`,"most common label"]],
+   example:R`The 5 nearest wines are classes [0, 0, 1, 0, 2] → predict <b>class 0</b>. As a probability: 3/5 = 0.6.`,
+   use:"Simple, assumption-free classification and regression on small, well-scaled data; recommendation (\"similar items\")."},
+  {id:"f8-knnw", day:8, name:"Distance-weighted k-NN vote",
+   tex:R`\text{score}(c) = \sum_{i \in N_k(x),\ y_i = c} \frac{1}{d(x, x_i)}`,
+   symbols:[[R`d(x, x_i)`,"distance to neighbour i"]],
+   example:R`Neighbours at distances 0.5 (class A), 1.0 (B), 1.0 (B): A scores 2.0, B scores 2.0. A tie, even though B has 2 of 3 votes.`,
+   use:"When closer neighbours should count more (scikit-learn: weights=\"distance\")."},
+  {id:"f8-minkowski", day:8, name:"Minkowski distance (k-NN's metric)",
+   tex:R`d_p(a, b) = \Big(\sum_i |a_i - b_i|^p\Big)^{1/p} \qquad p = 1:\ \text{Manhattan},\ \ p = 2:\ \text{Euclidean}`,
+   symbols:[[R`p`,"scikit-learn's p parameter"]],
+   example:R`a = [1, 1], b = [4, 5]: p = 1 → <b>7</b>; p = 2 → <b>5</b>. GridSearchCV picked p = 1 for Wine.`,
+   use:"Tuning k-NN's notion of closeness (Day 5 norms applied)."},
+  {id:"f8-linear", day:8, name:"Linear decision boundary",
+   tex:R`\hat y = \begin{cases}1 & w \cdot x + b > 0\\ 0 & \text{otherwise}\end{cases} \qquad \text{boundary: } w \cdot x + b = 0`,
+   symbols:[[R`w`,"weights (perpendicular to the boundary)"],[R`b`,"bias (shifts the boundary)"]],
+   example:R`Wine class 0 vs rest: z = 2.70·alcohol − 0.92·colour − 1.32. Boundary line: colour = (2.70·alcohol − 1.32) / 0.92.`,
+   use:"Logistic regression, linear SVM, perceptron: fast, interpretable classifiers."},
+  {id:"f8-se", day:8, name:"How noisy is a small test set?",
+   tex:R`\text{SE}(\text{acc}) = \sqrt{\frac{\text{acc}\,(1-\text{acc})}{n_{\text{test}}}}`,
+   symbols:[[R`n_{\text{test}}`,"number of test rows"]],
+   example:R`Accuracy 0.93 on 45 wines → SE ≈ <b>0.038</b>. One wine = 2.2 points, so 0.911 vs 0.978 (3 wines) is within noise.`,
+   use:"Interpreting test scores and differences between models (Day 4 applied)."},
+);
+
+LESSONS.push(
+  {id:"l8-gen", day:8, title:"1. Generalisation and honest evaluation",
+   body:R`<p>A model is useful only if it works on unseen data. Memorising is easy: 1-NN scored 100% on its own Wine training data and 70% on new wines. The difference is the <b>generalisation gap</b>.</p>
+<h4>Three sets, three jobs</h4>
+<table><tr><th>Set</th><th>Job</th><th>Rule</th></tr>
+<tr><td>Training</td><td>fit parameters</td><td>the model sees it</td></tr>
+<tr><td>Validation</td><td>choose models and hyperparameters</td><td>used many times</td></tr>
+<tr><td>Test</td><td>final estimate</td><td>used <b>once</b>, at the end</td></tr></table>
+<p>Choosing a setting by its test score turns the test set into a validation set, so the reported score becomes optimistic.</p>
+<h4>How to split</h4>
+<ul><li><b>Stratify</b> labels (<code>stratify=y</code>).</li>
+<li><b>Time series</b>: train on the past, test on the future.</li>
+<li><b>Grouped rows</b> (customers, patients): keep each group in one set (GroupKFold), or the model meets "known" people at test time.</li>
+<li>Two calls to <code>train_test_split</code> give 60/20/20.</li></ul>`},
+  {id:"l8-cv", day:8, title:"2. Cross-validation",
+   body:R`<p>A single split is noisy: the same 5-NN model scored anywhere from 0.907 to 1.000 across 100 random Wine splits. <b>k-fold CV</b> rotates the validation role through k folds and averages:</p>
+<pre><code>cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=8)
+scores = cross_val_score(make_pipeline(StandardScaler(), KNeighborsClassifier(5)), X, y, cv=cv)
+scores.mean(), scores.std()        # 0.967 ± 0.027</code></pre>
+<ul><li>Every row is validated once and trained on k − 1 times.</li>
+<li>Keep preprocessing <b>inside</b> the pipeline so it's refitted per fold (no leakage).</li>
+<li>Use <code>StratifiedKFold</code> (classification), <code>GroupKFold</code> (grouped rows), <code>TimeSeriesSplit</code> (time order), or repeated CV for small data.</li>
+<li><b>GridSearchCV</b> = cross-validation for every combination of settings, then a refit of the best on all training data.</li></ul>`},
+  {id:"l8-fit", day:8, title:"3. Overfitting, underfitting and the bias–variance trade-off",
+   body:R`<p>Fitting polynomials to 20 noisy points of a sine wave: degree 1 can't bend (<b>underfit</b>: high error everywhere); degree 4 follows the wave; degree 15 threads through every point and swings wildly between them (<b>overfit</b>: tiny training error, large validation error). Training error falls with every extra degree; validation error is <b>U-shaped</b>.</p>
+\[E[(y - \hat f)^2] = \text{bias}^2 + \text{variance} + \text{noise}\]
+<p>Simulating 500 training sets of 25 points:</p>
+<table><tr><th>degree</th><th>bias²</th><th>variance</th><th>total</th></tr>
+<tr><td>1</td><td>0.144</td><td>0.021</td><td>0.228</td></tr>
+<tr><td>3</td><td>0.003</td><td>0.010</td><td><b>0.075</b></td></tr>
+<tr><td>7</td><td>0.000</td><td>0.096</td><td>0.159</td></tr>
+<tr><td>11</td><td>0.003</td><td>0.630</td><td>0.695</td></tr></table>
+<p>Simple models are consistently wrong (bias); complex ones are right on average but unstable (variance).</p>
+<table><tr><th>Cut variance</th><th>Cut bias</th></tr>
+<tr><td>more data; regularisation (Ridge/Lasso, Day 9); simpler model; feature selection; bagging and Random Forests (Day 11); early stopping</td><td>more or better features; more flexible model; less regularisation; boosting (Day 11)</td></tr></table>`},
+  {id:"l8-knn", day:8, title:"4. k-Nearest Neighbours",
+   body:R`<pre><code>def predict_one(self, x):
+    distances = np.linalg.norm(self.X - x, axis=1)
+    nearest = np.argsort(distances)[:self.k]
+    return Counter(self.y[nearest]).most_common(1)[0][0]</code></pre>
+<p>The hand-written version produced identical predictions to scikit-learn's. Properties:</p>
+<ul><li><b>Lazy</b>: training stores the data; prediction computes distances to every stored point (slow for big data; trees like KD-trees or approximate search help).</li>
+<li><b>k controls complexity</b>: k = 1 is maximally flexible; k = n predicts the majority class everywhere.</li>
+<li><b>Scale features</b>: on Wine, CV accuracy was 0.709 raw vs 0.967 standardised, because proline (278–1,680) dominated every distance.</li>
+<li><b>Curse of dimensionality</b>: the nearest ÷ farthest distance ratio rose from 0.02 in 2-D to 0.90 in 1,000-D, so neighbours stop being meaningfully "near".</li>
+<li>Options: <code>weights="distance"</code> (closer votes count more), <code>p</code> (1 = Manhattan, 2 = Euclidean).</li></ul>`},
+  {id:"l8-linear", day:8, title:"5. Linear classifiers and decision boundaries",
+   body:R`<p>A linear classifier scores z = w·x + b and splits the space where z = 0: a straight line in 2-D, a hyperplane in more dimensions. Logistic regression learns w and b by gradient descent on log loss (Day 6). For Wine class 0 vs the rest on two features: z = 2.70·alcohol − 0.92·colour − 1.32.</p>
+<table><tr><th></th><th>k-NN</th><th>Linear</th></tr>
+<tr><td>Boundary</td><td>any shape</td><td>straight</td></tr>
+<tr><td>Training</td><td>none</td><td>learns w, b</td></tr>
+<tr><td>Prediction</td><td>slow</td><td>one dot product</td></tr>
+<tr><td>Explains with</td><td>similar examples</td><td>feature weights</td></tr>
+<tr><td>Main risk</td><td>variance (small k), scaling, dimensions</td><td>bias if classes need curved borders</td></tr></table>`},
+  {id:"l8-demo", day:8, title:"6. Live demo: boundaries as k changes, and test-once evaluation",
+   body:R`<p>Colouring a fine grid by each model's prediction shows its decision regions.</p>
+<p><b>Iris (sepal length and width only)</b>: k = 1 makes islands around single flowers (train 0.92, CV 0.71: the largest gap); larger k smooths the borders; logistic regression's straight borders had the best CV score (0.81). Versicolor and virginica overlap heavily on these features, so k-NN's CV barely changes between k = 5 and 100 (0.75–0.78).</p>
+<p><b>Wine (alcohol and colour)</b>: textbook. k = 1: train 1.00 / CV 0.79 (overfit); k = 10: 0.84 / 0.84; k = 60: 0.78 / 0.75 (underfit). On all 13 features the CV peak was k = 13 (0.978), with fold-to-fold spread larger than most differences between k values.</p>
+<h4>Tune, then test once</h4>
+<p>GridSearchCV over k, weights and p chose k = 9, Manhattan distance, uniform weights: CV 0.978, test 0.911. Logistic regression: CV 0.985, test 0.978. With 45 test wines, one mistake = 2.2 points and the standard error is about 4 points, so the k-NN drop is within the noise of a small test set. Choose by cross-validation; treat a small test score as an estimate with an error bar.</p>`},
+);
+
+INTERVIEW.push(
+  {id:"i8-overfit", day:8, level:"basic", q:"What is overfitting, and how do you detect and prevent it?",
+   say:R`Overfitting is when a model learns the noise and quirks of its training data instead of the general pattern, so it scores well in training but poorly on new data. I detect it by a large gap between training and validation scores, and prevent it with more data, simpler models, regularisation, cross-validated tuning, and early stopping.`,
+   a:R`<p>Example: 1-NN on Wine scored 100% in training and 70% on new wines. Polynomials of degree 15 fit 20 points perfectly but swing wildly between them. Other tools: feature selection, dropout and data augmentation for neural networks, and ensembling (bagging).</p>`},
+  {id:"i8-split", day:8, level:"basic", q:"Why do we need separate validation and test sets?",
+   say:R`The validation set is used to choose models and hyperparameters, so after many comparisons it becomes slightly optimistic. The test set is kept untouched until the end and used once, so it gives an unbiased estimate of real-world performance.`,
+   a:R`<p>If you tune on the test set, you're effectively training on it by trial and error. In practice, cross-validation on the training set often replaces a fixed validation set. Special cases: time-based splits for time series; group-based splits when the same entity appears in multiple rows.</p>`},
+  {id:"i8-cv", day:8, level:"basic", q:"What is k-fold cross-validation and why use it?",
+   say:R`Split the data into k folds, train on k − 1 and validate on the remaining one, rotate k times, and average the scores. It uses all the data for both training and validation and gives a more stable estimate than one split, plus a measure of its variability.`,
+   a:R`<p>On Wine, the same model scored 0.907–1.000 across 100 random single splits; 5-fold CV gave 0.967 ± 0.027. Use stratified folds for classification, keep preprocessing inside a pipeline, and choose GroupKFold or TimeSeriesSplit when rows aren't independent.</p>`},
+  {id:"i8-knn", day:8, level:"basic", q:"How does k-NN work? How do you choose k?",
+   say:R`To predict a point, k-NN finds the k closest training points by distance and takes a majority vote (or the average, for regression). Small k is flexible but noisy; large k is smooth but can underfit. I choose k by cross-validation, usually trying odd values to avoid ties.`,
+   a:R`<p>Always scale features: Wine CV went from 0.709 to 0.967 with standardisation. Other settings: the distance metric (p = 1 or 2) and distance-weighted votes. Weaknesses: slow predictions on large data, high memory use, and the curse of dimensionality.</p>`},
+  {id:"i8-bv", day:8, level:"mid", q:"Explain the bias–variance trade-off.",
+   say:R`Expected error splits into bias squared, variance and irreducible noise. Bias is error from overly simple assumptions: the model is consistently wrong. Variance is error from sensitivity to the particular training set: the model changes a lot with different data. Making a model more flexible lowers bias but raises variance, so we look for the complexity that minimises the total.`,
+   a:R`<p>Simulation on a sine curve: degree 1 had bias² 0.144 and variance 0.021; degree 11 had bias² 0.003 and variance 0.630; degree 3 minimised the total (0.075). Levers: more data and regularisation reduce variance; richer features and models reduce bias. Bagging reduces variance; boosting reduces bias.</p>`},
+  {id:"i8-curves", day:8, level:"mid", q:"How do you tell from learning or validation curves whether a model has high bias or high variance?",
+   say:R`High bias: training and validation scores are both poor and close together, and more data doesn't help much. High variance: training score is much better than validation, with a large gap that typically narrows as you add data.`,
+   a:R`<p>A validation curve plots scores against a complexity parameter (k, depth, C); a learning curve plots them against training-set size. Wine with two features: k = 1 gave train 1.00 vs CV 0.79 (variance); k = 60 gave 0.78 vs 0.75 (bias, both lower).</p>`},
+  {id:"i8-curse", day:8, level:"mid", q:"What is the curse of dimensionality?",
+   say:R`As the number of features grows, the space becomes so vast that data becomes sparse and distances between points become almost equal, so methods based on neighbourhoods or density stop working well, and you need exponentially more data to cover the space.`,
+   a:R`<p>Simulation: the ratio of nearest to farthest distance among random points was 0.02 in 2-D but 0.90 in 1,000-D. Remedies: feature selection, dimensionality reduction (PCA, Day 13), models that don't rely on raw distances, and more data.</p>`},
+  {id:"i8-knnvslinear", day:8, level:"mid", q:"Compare k-NN with a linear classifier like logistic regression.",
+   say:R`k-NN is non-parametric: it stores the data and can draw boundaries of any shape, but predictions are slow, it needs scaling and suffers in high dimensions. Logistic regression learns one weight per feature and draws a straight boundary: fast, interpretable and data-efficient, but biased if the classes need curved borders.`,
+   a:R`<p>On Wine with all 13 standardised features, the classes are nearly linearly separable, and logistic regression did best (CV 0.985). On two overlapping Iris features, it also edged out k-NN (0.81 vs at most 0.78). Non-linear boundaries can be added to linear models through feature engineering (polynomial features, Day 10) or kernels (SVMs).</p>`},
+  {id:"i8-leak", day:8, level:"adv", q:"Your cross-validation score is great but production performance is poor. What could have gone wrong?",
+   say:R`Most likely leakage or a mismatch between validation and reality: preprocessing fitted on all data, features unavailable at prediction time, random splits on time-ordered or grouped data, tuning so heavily that CV overfit, or data drift since training.`,
+   a:R`<p>Checks: put every preprocessing step in the pipeline; use time-based or group-based splits matching how the model is used; keep a final untouched test set; compare training and production feature distributions; and check that labels in training were defined the same way as the production outcome.</p>`},
+  {id:"i8-small", day:8, level:"adv", q:"Two models differ by 3 points of accuracy on a 45-row test set. Which is better?",
+   say:R`You can't tell reliably. Each row is worth about 2.2 points, and the standard error of an accuracy around 93% on 45 rows is about 4 points, so the difference is within noise. I'd compare them with repeated cross-validation, or a paired test on the same rows such as McNemar's.`,
+   a:R`<p>This happened in the notebook: tuned k-NN scored 0.911 vs logistic regression's 0.978 on 45 test wines, while their CV estimates were 0.978 and 0.985. Bootstrap confidence intervals on the test predictions make the uncertainty explicit.</p>`},
 );
 
 
